@@ -10,22 +10,35 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddRoles<IdentityRole>()   // Bật phân quyền theo vai trò
     .AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddControllersWithViews();
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    app.UseMigrationsEndPoint();
-}
-else
-{
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+    // Tạo 3 vai trò nếu chưa có
+    foreach (var role in new[] { "QuanLy", "ThuKho", "KyThuatVien" })
+        if (!await roleMgr.RoleExistsAsync(role))
+            await roleMgr.CreateAsync(new IdentityRole(role));
+
+    // Hàm tạo tài khoản mẫu rồi gán vai trò
+    async Task TaoUser(string email, string role)
+    {
+        if (await userMgr.FindByEmailAsync(email) != null) return;   // Đã có thì bỏ qua
+        var user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
+        await userMgr.CreateAsync(user, "Abc@12345");                // Mật khẩu mẫu
+        await userMgr.AddToRoleAsync(user, role);
+    }
+
+    await TaoUser("quanly@kho.vn", "QuanLy");
+    await TaoUser("thukho@kho.vn", "ThuKho");
+    await TaoUser("kythuat@kho.vn", "KyThuatVien");
 }
 
 app.UseHttpsRedirection();
