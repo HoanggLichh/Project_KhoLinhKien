@@ -1,0 +1,37 @@
+@model IEnumerable<KhoLinhKien.Models.ViTriKho>
+@{
+    ViewData["Title"] = "Vị trí kho";
+    var coQuyen = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
+}
+
+<h1>Vị trí lưu kho</h1>
+
+@if (coQuyen)
+{
+    <p><a asp-action="Create" class="btn btn-primary">Thêm vị trí mới</a></p>
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr><th>Tên vị trí</th><th>Ghi chú</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.TenViTri</td>
+            <td>@item.GhiChu</td>
+            <td>
+                <a asp-action="Details" asp-route-id="@item.Id">Xem linh kiện</a>
+                @if (coQuyen)
+                {
+                    <span> | </span>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a>
+                    <span> | </span>
+                    <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

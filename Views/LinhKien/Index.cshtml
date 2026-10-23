@@ -1,0 +1,73 @@
+@model IEnumerable<KhoLinhKien.Models.LinhKien>
+@{
+    ViewData["Title"] = "Linh kiện";
+    var coQuyen = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
+}
+
+<h1>Danh sách linh kiện</h1>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input name="tuKhoa" value="@ViewData["TuKhoa"]" class="form-control" placeholder="Tìm theo mã hoặc tên..." />
+    </div>
+    <div class="col-md-3">
+    <select name="loaiId" class="form-select" asp-items="@((SelectList)ViewData["LoaiId"])">
+        <option value="">-- Tất cả loại --</option>
+    </select>
+    </div>
+    <div class="col-md-3">
+    <select name="viTriId" class="form-select" asp-items="@((SelectList)ViewData["ViTriId"])">
+        <option value="">-- Tất cả vị trí --</option>
+    </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Tìm</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+    </div>
+</form>
+
+@if (coQuyen)
+{
+    <p><a asp-action="Create" class="btn btn-primary">Thêm linh kiện</a></p>
+}
+
+<table class="table table-striped table-sm align-middle">
+    <thead>
+        <tr>
+            <th>Mã</th>
+            <th>Tên linh kiện</th>
+            <th>Loại</th>
+            <th>Vị trí</th>
+            <th>Dòng máy</th>
+            <th class="text-end">Đơn giá</th>
+            <th class="text-end">Tồn</th>
+            <th class="text-end">Tối thiểu</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.MaLinhKien</td>
+            <td>@item.TenLinhKien</td>
+            <td>@item.LoaiLinhKien?.TenLoai</td>
+            <td>@(item.ViTriKho?.TenViTri ?? "Chưa gán")</td>
+            <td>@item.DongMayTuongThich</td>
+            <td class="text-end">@item.DonGia.ToString("N0")</td>
+            <td class="text-end">@item.SoLuongTon</td>
+            <td class="text-end">@item.TonToiThieu</td>
+            <td>
+                <a asp-action="Details" asp-route-id="@item.Id">Chi tiết</a>
+                @if (coQuyen)
+                {
+                    <span> | </span>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a>
+                    <span> | </span>
+                    <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

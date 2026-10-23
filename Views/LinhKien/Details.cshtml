@@ -1,0 +1,27 @@
+@model KhoLinhKien.Models.LinhKien
+@{
+    ViewData["Title"] = "Chi tiết linh kiện";
+}
+
+<h1>Chi tiết linh kiện</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Mã linh kiện</dt>
+    <dd class="col-sm-9">@Model.MaLinhKien</dd>
+    <dt class="col-sm-3">Tên linh kiện</dt>
+    <dd class="col-sm-9">@Model.TenLinhKien</dd>
+    <dt class="col-sm-3">Loại</dt>
+    <dd class="col-sm-9">@Model.LoaiLinhKien?.TenLoai</dd>
+    <dt class="col-sm-3">Đang để ở</dt>
+    <dd class="col-sm-9">@(Model.ViTriKho?.TenViTri ?? "Chưa gán vị trí")</dd>
+    <dt class="col-sm-3">Dòng máy tương thích</dt>
+    <dd class="col-sm-9">@Model.DongMayTuongThich</dd>
+    <dt class="col-sm-3">Đơn giá</dt>
+    <dd class="col-sm-9">@Model.DonGia.ToString("N0") đ</dd>
+    <dt class="col-sm-3">Số lượng tồn</dt>
+    <dd class="col-sm-9">@Model.SoLuongTon</dd>
+    <dt class="col-sm-3">Tồn tối thiểu</dt>
+    <dd class="col-sm-9">@Model.TonToiThieu</dd>
+</dl>
+
+<a asp-action="Index">Quay lại danh sách</a>

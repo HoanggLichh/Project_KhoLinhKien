@@ -1,0 +1,54 @@
+@model KhoLinhKien.Models.ViTriKho
+@{
+    ViewData["Title"] = "Chi tiết vị trí";
+    var coQuyen = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
+    var ds = (List<KhoLinhKien.Models.LinhKien>)ViewBag.DanhSach;
+}
+
+<h1>Vị trí: @Model.TenViTri</h1>
+<p class="text-muted">@Model.GhiChu</p>
+
+@if (coQuyen)
+{
+    <form asp-action="GanLinhKien" method="post" class="row g-2 mb-3">
+        <input type="hidden" name="viTriId" value="@Model.Id" />
+        <div class="col-md-6">
+            <select name="linhKienId" class="form-select" asp-items="(SelectList)ViewBag.ChuaGan">
+                <option value="">-- Chọn linh kiện chưa có vị trí --</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-success">Gán vào vị trí này</button>
+        </div>
+    </form>
+}
+
+<h4>Linh kiện đang để ở đây (@ds.Count)</h4>
+<table class="table table-striped">
+    <thead>
+        <tr><th>Mã</th><th>Tên linh kiện</th><th>Loại</th><th>Tồn</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var item in ds)
+    {
+        <tr>
+            <td>@item.MaLinhKien</td>
+            <td>@item.TenLinhKien</td>
+            <td>@item.LoaiLinhKien?.TenLoai</td>
+            <td>@item.SoLuongTon</td>
+            <td>
+                @if (coQuyen)
+                {
+                    <form asp-action="BoLinhKien" method="post" class="d-inline">
+                        <input type="hidden" name="viTriId" value="@Model.Id" />
+                        <input type="hidden" name="linhKienId" value="@item.Id" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Bỏ khỏi vị trí</button>
+                    </form>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<a asp-action="Index">Quay lại danh sách</a>

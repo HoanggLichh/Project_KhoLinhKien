@@ -1,0 +1,24 @@
+@model KhoLinhKien.Models.LinhKien
+@{
+    ViewData["Title"] = "Xóa linh kiện";
+}
+
+<h1>Xóa linh kiện</h1>
+<h4>Bạn chắc chắn muốn xóa linh kiện này?</h4>
+
+<dl class="row">
+    <dt class="col-sm-3">Mã linh kiện</dt>
+    <dd class="col-sm-9">@Model.MaLinhKien</dd>
+    <dt class="col-sm-3">Tên linh kiện</dt>
+    <dd class="col-sm-9">@Model.TenLinhKien</dd>
+    <dt class="col-sm-3">Loại</dt>
+    <dd class="col-sm-9">@Model.LoaiLinhKien?.TenLoai</dd>
+    <dt class="col-sm-3">Số lượng tồn</dt>
+    <dd class="col-sm-9">@Model.SoLuongTon</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Xóa</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

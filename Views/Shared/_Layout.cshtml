@@ -26,13 +26,21 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        
+                        <!-- Bước 6.1: Cập nhật menu theo phân quyền -->
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="LinhKien" asp-action="Index">Linh kiện</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="ViTriKho" asp-action="Index">Vị trí kho</a></li>
+                        }
                         @if (User.IsInRole("QuanLy") || User.IsInRole("ThuKho"))
                         {
-                        <li class="nav-item"><a class="nav-link text-dark" href="#">Linh kiện</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="LoaiLinhKien" asp-action="Index">Loại linh kiện</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="NhaCungCap" asp-action="Index">Nhà cung cấp</a></li>
                         }
                         @if (User.IsInRole("QuanLy") || User.IsInRole("KyThuatVien"))
                         {
-                        <li class="nav-item"><a class="nav-link text-dark" href="#">Đơn sửa chữa</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" href="#">Đơn sửa chữa</a></li>
                         }
 
                     </ul>
@@ -43,6 +51,17 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+            
+            <!-- Bước 6.2: Thêm hiển thị thông báo TempData -->
+            @if (TempData["ThongBao"] != null)
+            {
+                <div class="alert alert-success">@TempData["ThongBao"]</div>
+            }
+            @if (TempData["Loi"] != null)
+            {
+                <div class="alert alert-danger">@TempData["Loi"]</div>
+            }
+
             @RenderBody()
         </main>
     </div>
