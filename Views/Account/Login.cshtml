@@ -1,0 +1,48 @@
+@model KhoLinhKien.Controllers.LoginViewModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<style>
+    .login-wrap { min-height: 60vh; display: flex; align-items: center; justify-content: center; }
+    .login-card { background: #fff; width: 100%; max-width: 440px; padding: 2.2rem 2.2rem 1.8rem; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
+    .login-card h2 { font-weight: 800; letter-spacing: 1px; font-size: 1.4rem; margin-bottom: 1.5rem; color: #111; }
+    .login-card label { font-weight: 600; font-size: .85rem; margin-bottom: .35rem; }
+    .login-card .form-control { border-radius: 0; padding: .6rem .75rem; }
+    .login-card .form-control:focus { border-color: var(--primary); box-shadow: none; }
+    .btn-login { background: var(--primary); color: #fff; font-weight: 700; letter-spacing: .5px; border-radius: 0; padding: .6rem 1.4rem; }
+    .btn-login:hover { background: var(--accent); color: var(--primary); }
+</style>
+
+<div class="login-wrap">
+    <div class="login-card">
+        <h2>ĐĂNG NHẬP</h2>
+
+        <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+            <div class="mb-3">
+                <label asp-for="TenDangNhap">Tên tài khoản hoặc địa chỉ email *</label>
+                <input asp-for="TenDangNhap" class="form-control" autofocus />
+                <span asp-validation-for="TenDangNhap" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MatKhau">Mật khẩu *</label>
+                <input asp-for="MatKhau" class="form-control" />
+                <span asp-validation-for="MatKhau" class="text-danger small"></span>
+            </div>
+
+            <div class="form-check mb-3">
+                <input asp-for="GhiNho" class="form-check-input" />
+                <label asp-for="GhiNho" class="form-check-label fw-semibold">Ghi nhớ mật khẩu</label>
+            </div>
+
+            <button type="submit" class="btn btn-login">ĐĂNG NHẬP</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

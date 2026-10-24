@@ -19,6 +19,11 @@ public class HomeController : Controller
         return View();
     }
 
+    public IActionResult GioiThieu()
+{
+    return View();
+}
+
     [Authorize(Roles = "QuanLy")]   // Chỉ vai trò QuanLy được vào trang này
     public IActionResult Privacy()
     {

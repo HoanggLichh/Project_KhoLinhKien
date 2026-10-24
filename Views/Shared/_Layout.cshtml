@@ -1,79 +1,130 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - KhoLinhKien</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Kho linh kiện</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/KhoLinhKien.styles.css" asp-append-version="true" />
+
+    <style>
+        .menu-btn { background: none; border: 0; color: #fff; cursor: pointer; padding: 0; }
+        .menu-btn i { font-size: 2rem; line-height: 1; }
+
+        .menu-wrap { position: relative; }
+        .menu-panel {
+            position: absolute; left: 0; top: calc(100% + 14px); z-index: 100;
+            width: 290px; background: #fff; color: #111;
+            box-shadow: 0 10px 28px rgba(0,0,0,.25);
+            padding: .6rem 0 1rem;
+            opacity: 0; visibility: hidden; transform: translateY(-12px);
+            transition: opacity .25s ease, transform .25s ease, visibility .25s;
+        }
+        .menu-panel.open { opacity: 1; visibility: visible; transform: translateY(0); }
+
+        .menu-list { list-style: none; margin: 0; padding: 0; }
+        .menu-list a {
+            display: block; padding: .8rem 1.4rem;
+            font-weight: 700; font-size: .85rem; text-transform: uppercase;
+            color: #111 !important; text-decoration: none !important; letter-spacing: .3px;
+        }
+        .menu-list a:hover { color: #1e2e8f !important; background: #f5f7ff; }
+
+        .menu-support { padding: .9rem 1.4rem 0; color: #222; }
+        .support-title { text-transform: uppercase; color: #444; margin-bottom: .6rem; }
+        .support-item { display: flex; align-items: center; gap: .8rem; padding: .5rem 0; font-size: .9rem; }
+        .support-item i { font-size: 1.4rem; }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">KhoLinhKien</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        
-                        <!-- Bước 6.1: Cập nhật menu theo phân quyền -->
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="LinhKien" asp-action="Index">Linh kiện</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="ViTriKho" asp-action="Index">Vị trí kho</a></li>
-                        }
-                        @if (User.IsInRole("QuanLy") || User.IsInRole("ThuKho"))
-                        {
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="LoaiLinhKien" asp-action="Index">Loại linh kiện</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-controller="NhaCungCap" asp-action="Index">Nhà cung cấp</a></li>
-                        }
-                        @if (User.IsInRole("QuanLy") || User.IsInRole("KyThuatVien"))
-                        {
-                            <li class="nav-item"><a class="nav-link text-dark" href="#">Đơn sửa chữa</a></li>
-                        }
-
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            
-            <!-- Bước 6.2: Thêm hiển thị thông báo TempData -->
-            @if (TempData["ThongBao"] != null)
-            {
-                <div class="alert alert-success">@TempData["ThongBao"]</div>
-            }
-            @if (TempData["Loi"] != null)
-            {
-                <div class="alert alert-danger">@TempData["Loi"]</div>
-            }
-
-            @RenderBody()
-        </main>
+    <div class="topbar text-center small py-1">
+        Quản lý <b>kho linh kiện điện tử</b> cho cửa hàng sửa chữa điện thoại
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - KhoLinhKien - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <header class="site-header">
+        <div class="container d-flex align-items-center gap-3 py-3">
+
+            <div class="menu-wrap">
+                <button type="button" id="menuBtn" class="menu-btn" aria-label="Mở menu">
+                    <i class="bi bi-list"></i>
+                </button>
+
+                <div id="menuPanel" class="menu-panel">
+                    <ul class="menu-list">
+                        <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                        <li><a asp-controller="Home" asp-action="GioiThieu">Giới thiệu</a></li>
+                        @if (User.IsInRole("QuanLy") || User.IsInRole("ThuKho"))
+                        {
+                            <li><a asp-controller="LinhKien" asp-action="Index">Linh kiện</a></li>
+                            <li><a asp-controller="LoaiLinhKien" asp-action="Index">Loại linh kiện</a></li>
+                            <li><a asp-controller="NhaCungCap" asp-action="Index">Nhà cung cấp</a></li>
+                            <li><a asp-controller="ViTriKho" asp-action="Index">Vị trí lưu kho</a></li>
+                        }
+                        <li><a href="/#tinh-nang">Tính năng</a></li>
+                        <li><a href="#lien-he">Liên hệ</a></li>
+                    </ul>
+                    <div class="menu-support">
+                        <div class="support-title">BẠN CẦN HỖ TRỢ</div>
+                        <div class="support-item"><i class="bi bi-telephone-inbound"></i> 0900 000 000</div>
+                        <div class="support-item"><i class="bi bi-envelope-open"></i> khoklinhkien@gmail.com</div>
+                    </div>
+                </div>
+            </div>
+
+            <a class="brand" asp-controller="Home" asp-action="Index"><i class="bi bi-cpu"></i> KhoLinhKien</a>
+
+            <form class="search flex-grow-1" asp-controller="LinhKien" asp-action="Index" method="get">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Tìm kiếm linh kiện..." />
+                    <button class="btn btn-white" type="submit"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+
+            <partial name="_LoginPartial" />
+        </div>
+    </header>
+
+    <main class="page container">
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer mt-5 py-4" id="lien-he">
+        <div class="container d-flex flex-wrap justify-content-between gap-2 small">
+            <span>&copy; 2026 Hệ thống quản lý kho linh kiện điện tử</span>
+            <span>ASP.NET Core MVC · SQL Server</span>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        (function () {
+            var btn = document.getElementById('menuBtn');
+            var panel = document.getElementById('menuPanel');
+            var icon = btn.querySelector('i');
+
+            function setOpen(open) {
+                panel.classList.toggle('open', open);
+                icon.className = open ? 'bi bi-x-lg' : 'bi bi-list';
+            }
+
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                setOpen(!panel.classList.contains('open'));
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!panel.contains(e.target)) setOpen(false);
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') setOpen(false);
+            });
+        })();
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

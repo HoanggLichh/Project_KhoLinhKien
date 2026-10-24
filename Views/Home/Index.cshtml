@@ -1,8 +1,50 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿@{ ViewData["Title"] = "Trang chủ"; }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<section class="hero">
+    <h1>Quản lý kho linh kiện điện thoại gọn gàng, chính xác</h1>
+    <p>
+        <b>Hệ thống kho linh kiện</b> giúp cửa hàng sửa chữa nhập kho, theo dõi tồn,
+        tra cứu vị trí và quản lý đơn sửa chữa trong một nơi duy nhất, có phân quyền rõ ràng cho từng vai trò.
+    </p>
+    @if (User.Identity!.IsAuthenticated)
+    {
+        <a class="btn btn-cta btn-lg" asp-controller="LinhKien" asp-action="Index">XEM LINH KIỆN</a>
+    }
+    else
+    {
+        <a class="btn btn-cta btn-lg" asp-controller="Account" asp-action="Login">ĐĂNG NHẬP</a>
+    }
+</section>
+
+<h3 class="block-title" id="tinh-nang">Tính năng nổi bật của hệ thống</h3>
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="outline-card">
+            <h6><i class="bi bi-shield-check"></i> Phân quyền rõ ràng</h6>
+            <p>Quản lý, Thủ kho, Kỹ thuật viên mỗi người chỉ thấy <b>đúng chức năng</b> của mình</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="outline-card">
+            <h6><i class="bi bi-box-seam"></i> Tồn kho chính xác</h6>
+            <p>Số tồn chỉ thay đổi qua <b>phiếu nhập</b> hoặc <b>đơn sửa chữa</b></p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="outline-card">
+            <h6><i class="bi bi-bell"></i> Cảnh báo tồn thấp</h6>
+            <p>Biết trước khi <b>sắp hết linh kiện</b> để kịp nhập hàng</p>
+        </div>
+    </div>
 </div>
+
+@if (User.IsInRole("QuanLy") || User.IsInRole("ThuKho"))
+{
+    <h3 class="block-title">Chức năng chính</h3>
+    <div class="row g-3">
+        <div class="col-6 col-md-3"><a class="func-card" asp-controller="LinhKien" asp-action="Index"><i class="bi bi-motherboard"></i><h6 class="mt-2 mb-0">Linh kiện</h6></a></div>
+        <div class="col-6 col-md-3"><a class="func-card" asp-controller="LoaiLinhKien" asp-action="Index"><i class="bi bi-tags"></i><h6 class="mt-2 mb-0">Loại linh kiện</h6></a></div>
+        <div class="col-6 col-md-3"><a class="func-card" asp-controller="NhaCungCap" asp-action="Index"><i class="bi bi-truck"></i><h6 class="mt-2 mb-0">Nhà cung cấp</h6></a></div>
+        <div class="col-6 col-md-3"><a class="func-card" asp-controller="ViTriKho" asp-action="Index"><i class="bi bi-boxes"></i><h6 class="mt-2 mb-0">Vị trí lưu kho</h6></a></div>
+    </div>
+}

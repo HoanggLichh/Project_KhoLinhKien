@@ -1,0 +1,71 @@
+@{ ViewData["Title"] = "Giới thiệu"; }
+
+<style>
+    .about { max-width: 860px; margin: 0 auto; line-height: 1.75; }
+    .about h1 { text-align: center; font-weight: 800; text-transform: uppercase; color: var(--primary); margin: .5rem 0 1.2rem; font-size: 1.8rem; }
+    .about h2 { font-size: 1.15rem; font-weight: 800; color: var(--primary); text-transform: uppercase; margin: 2rem 0 .7rem; padding-left: .7rem; border-left: 5px solid var(--accent); }
+    .about p { color: #374151; text-align: justify; }
+    .about .contact { background: #f4f6fa; border-radius: 8px; padding: 1.2rem 1.4rem; }
+    .about .contact div { padding: .25rem 0; }
+    .about .contact i { color: var(--primary); margin-right: .6rem; }
+</style>
+
+<article class="about">
+    <h1>Giới thiệu về hệ thống Kho Linh Kiện</h1>
+
+    <p>
+        <b>Hệ thống quản lý kho linh kiện điện tử</b> là ứng dụng web dành cho cửa hàng sửa chữa điện thoại,
+        giúp quản lý toàn bộ linh kiện từ lúc nhập về cho đến khi được dùng trong từng đơn sửa chữa.
+        Hệ thống thay thế sổ sách và bảng tính rời rạc bằng một nơi lưu trữ thống nhất, chính xác và dễ tra cứu.
+    </p>
+
+    <h2>Tầm nhìn và sứ mệnh</h2>
+    <p>
+        Hệ thống được xây dựng với tầm nhìn trở thành công cụ quản lý kho đơn giản, đáng tin cậy,
+        giúp những cửa hàng sửa chữa vừa và nhỏ vận hành gọn gàng mà không cần phần mềm phức tạp.
+    </p>
+    <p>
+        Sứ mệnh của hệ thống là bảo đảm <b>“Biết đúng – Lấy đúng – Còn đúng”</b>: biết rõ mình đang có linh kiện gì,
+        lấy đúng vị trí cần lấy và số tồn luôn khớp với thực tế, để kỹ thuật viên không phải dừng việc vì thiếu hoặc nhầm linh kiện.
+    </p>
+
+    <h2>Phương châm vận hành</h2>
+    <p>
+        Hệ thống lấy phương châm <b>2C: “Chính xác – Chặt chẽ”</b> làm nguyên tắc cốt lõi.
+        Số tồn kho chỉ thay đổi qua <b>phiếu nhập kho</b> hoặc <b>đơn sửa chữa</b>, không cho phép sửa trực tiếp,
+        không cho xuất vượt quá số tồn và tự cảnh báo khi linh kiện xuống dưới mức tối thiểu.
+        Mỗi vai trò (Quản lý, Thủ kho, Kỹ thuật viên) chỉ được dùng đúng chức năng của mình.
+    </p>
+
+    <h2>Quản lý danh mục linh kiện đa dạng</h2>
+    <p>
+        Hệ thống quản lý linh kiện cho điện thoại và máy tính bảng: từ các bộ phận thay thế thường xuyên như
+        pin, màn hình, camera, mặt kính, loa, đến các chi tiết chuyên sâu như dây liên kết, cụm đuôi sạc, dây nguồn.
+    </p>
+    <p>
+        Mỗi linh kiện có <b>mã duy nhất</b>, thuộc một <b>loại</b>, gắn với <b>nhà cung cấp</b>, có giá, mức tồn tối thiểu
+        và <b>vị trí lưu kho</b> (kệ, ngăn). Nhờ đó chỉ cần gõ mã hoặc tên là tìm ra linh kiện đang để ở đâu.
+    </p>
+
+    <h2>Quy trình nhập kho và sửa chữa rõ ràng</h2>
+    <p>
+        Quy trình làm việc được chuẩn hóa theo bốn bước: <b>nhập linh kiện</b> từ nhà cung cấp bằng phiếu nhập,
+        <b>nhận máy</b> và tạo đơn sửa chữa, <b>xuất linh kiện</b> cho đơn sửa, rồi <b>theo dõi tồn kho</b>.
+        Mỗi đơn sửa chữa có trạng thái rõ ràng: nhận máy, đang sửa, hoàn tất,
+        và lịch sử linh kiện đã dùng được lưu lại để kiểm tra khi cần.
+    </p>
+
+    <h2>Lời kết</h2>
+    <p>
+        Với mục tiêu giúp việc quản lý kho trở nên đơn giản và minh bạch, hệ thống sẽ tiếp tục được hoàn thiện
+        qua từng giai đoạn để phục vụ tốt hơn nhu cầu thực tế của cửa hàng sửa chữa.
+    </p>
+
+    <h2>Thông tin liên hệ</h2>
+    <div class="contact">
+        <div><i class="bi bi-globe"></i> Website: localhost (bản phát triển)</div>
+        <div><i class="bi bi-geo-alt"></i> Địa chỉ: 27 Ni Sư Huỳnh Liên, Quận 5, TP. HCM</div>
+        <div><i class="bi bi-telephone"></i> Hotline: 0358851902</div>
+        <div><i class="bi bi-envelope"></i> E-mail: hoanglich505@gmail.com</div>
+    </div>
+</article>
