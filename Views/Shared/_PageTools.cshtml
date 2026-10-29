@@ -1,0 +1,47 @@
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content confirm">
+            <form method="post" id="deleteForm">
+                @Html.AntiForgeryToken()
+                <div class="confirm-body">
+                    <div class="confirm-icon"><i class="bi bi-trash3-fill"></i></div>
+                    <h5>Xác nhận xóa</h5>
+                    <p>Bạn chắc chắn muốn xóa <b id="deleteName"></b>?<br><small>Hành động này không thể hoàn tác.</small></p>
+                </div>
+                <div class="confirm-foot">
+                    <button type="button" class="btn-cancel" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn-danger-solid"><i class="bi bi-trash3"></i> Xóa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var modal = document.getElementById('deleteModal');
+        document.body.appendChild(modal);
+        modal.addEventListener('show.bs.modal', function (e) {
+            var b = e.relatedTarget;
+            if (!b) return;
+            document.getElementById('deleteForm').action = b.getAttribute('data-delete-url');
+            document.getElementById('deleteName').textContent = b.getAttribute('data-delete-name');
+        });
+
+        // Lọc nhanh ngay trên trang
+        var box = document.querySelector('[data-live-filter]');
+        if (box) {
+            var items = document.querySelectorAll('[data-filter-item]');
+            var empty = document.getElementById('filterEmpty');
+            box.addEventListener('input', function () {
+                var q = box.value.trim().toLowerCase(), shown = 0;
+                items.forEach(function (el) {
+                    var ok = el.textContent.toLowerCase().indexOf(q) > -1;
+                    el.style.display = ok ? '' : 'none';
+                    if (ok) shown++;
+                });
+                if (empty) empty.style.display = shown ? 'none' : '';
+            });
+        }
+    });
+</script>

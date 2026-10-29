@@ -1,130 +1,123 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var daDangNhap = User.Identity!.IsAuthenticated;
+    var quyenKho = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
+    var vaiTro = User.IsInRole("QuanLy") ? "Quản lý" : User.IsInRole("ThuKho") ? "Thủ kho" : User.IsInRole("KyThuatVien") ? "Kỹ thuật viên" : "";
+}
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Kho linh kiện</title>
+    <title>@ViewData["Title"] - L-Inventory</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-    <style>
-        .menu-btn { background: none; border: 0; color: #fff; cursor: pointer; padding: 0; }
-        .menu-btn i { font-size: 2rem; line-height: 1; }
-
-        .menu-wrap { position: relative; }
-        .menu-panel {
-            position: absolute; left: 0; top: calc(100% + 14px); z-index: 100;
-            width: 290px; background: #fff; color: #111;
-            box-shadow: 0 10px 28px rgba(0,0,0,.25);
-            padding: .6rem 0 1rem;
-            opacity: 0; visibility: hidden; transform: translateY(-12px);
-            transition: opacity .25s ease, transform .25s ease, visibility .25s;
-        }
-        .menu-panel.open { opacity: 1; visibility: visible; transform: translateY(0); }
-
-        .menu-list { list-style: none; margin: 0; padding: 0; }
-        .menu-list a {
-            display: block; padding: .8rem 1.4rem;
-            font-weight: 700; font-size: .85rem; text-transform: uppercase;
-            color: #111 !important; text-decoration: none !important; letter-spacing: .3px;
-        }
-        .menu-list a:hover { color: #1e2e8f !important; background: #f5f7ff; }
-
-        .menu-support { padding: .9rem 1.4rem 0; color: #222; }
-        .support-title { text-transform: uppercase; color: #444; margin-bottom: .6rem; }
-        .support-item { display: flex; align-items: center; gap: .8rem; padding: .5rem 0; font-size: .9rem; }
-        .support-item i { font-size: 1.4rem; }
-    </style>
 </head>
-<body>
-    <div class="topbar text-center small py-1">
-        Quản lý <b>kho linh kiện điện tử</b> cho cửa hàng sửa chữa điện thoại
-    </div>
+<body class="@(daDangNhap ? "app" : "guest")">
 
-    <header class="site-header">
-        <div class="container d-flex align-items-center gap-3 py-3">
+@if (daDangNhap)
+{
+    <aside class="sidebar" id="sidebar">
+        <a class="brand" asp-controller="Home" asp-action="Index"><i class="bi bi-cpu-fill"></i> L-INVENTORY</a>
 
-            <div class="menu-wrap">
-                <button type="button" id="menuBtn" class="menu-btn" aria-label="Mở menu">
-                    <i class="bi bi-list"></i>
-                </button>
+        <nav class="side-nav">
+            <a class="side-link" asp-controller="Home" asp-action="Index"><i class="bi bi-pie-chart-fill"></i> Tổng quan</a>
 
-                <div id="menuPanel" class="menu-panel">
-                    <ul class="menu-list">
-                        <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
-                        <li><a asp-controller="Home" asp-action="GioiThieu">Giới thiệu</a></li>
-                        @if (User.IsInRole("QuanLy") || User.IsInRole("ThuKho"))
-                        {
-                            <li><a asp-controller="LinhKien" asp-action="Index">Linh kiện</a></li>
-                            <li><a asp-controller="LoaiLinhKien" asp-action="Index">Loại linh kiện</a></li>
-                            <li><a asp-controller="NhaCungCap" asp-action="Index">Nhà cung cấp</a></li>
-                            <li><a asp-controller="ViTriKho" asp-action="Index">Vị trí lưu kho</a></li>
-                        }
-                        <li><a href="/#tinh-nang">Tính năng</a></li>
-                        <li><a href="#lien-he">Liên hệ</a></li>
-                    </ul>
-                    <div class="menu-support">
-                        <div class="support-title">BẠN CẦN HỖ TRỢ</div>
-                        <div class="support-item"><i class="bi bi-telephone-inbound"></i> 0900 000 000</div>
-                        <div class="support-item"><i class="bi bi-envelope-open"></i> khoklinhkien@gmail.com</div>
+            @if (quyenKho)
+            {
+                <a class="side-link" asp-controller="LinhKien" asp-action="Index"><i class="bi bi-motherboard"></i> Quản lý linh kiện</a>
+                <a class="side-link" asp-controller="LoaiLinhKien" asp-action="Index"><i class="bi bi-tags-fill"></i> Loại linh kiện</a>
+                <a class="side-link" asp-controller="NhaCungCap" asp-action="Index"><i class="bi bi-truck"></i> Nhà cung cấp</a>
+                <a class="side-link" asp-controller="ViTriKho" asp-action="Index"><i class="bi bi-boxes"></i> Vị trí lưu kho</a>
+                <a class="side-link disabled" href="#"><i class="bi bi-box-arrow-in-down"></i> Phiếu nhập kho <span class="soon">Sắp có</span></a>
+            }
+
+            <a class="side-link disabled" href="#"><i class="bi bi-tools"></i> Đơn sửa chữa <span class="soon">Sắp có</span></a>
+            <a class="side-link" asp-controller="Home" asp-action="GioiThieu"><i class="bi bi-info-circle-fill"></i> Giới thiệu</a>
+        </nav>
+
+        <form class="side-logout" asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="side-link logout"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>
+        </form>
+    </aside>
+
+    <div class="content">
+        <header class="topbar">
+            <button type="button" class="toggle-btn" id="sidebarToggle" aria-label="Mở menu"><i class="bi bi-list"></i></button>
+            <div class="topbar-title">Hệ thống quản lý nội bộ</div>
+            <div class="topbar-right">
+                <i class="bi bi-bell-fill bell"></i>
+                <div class="user">
+                    <i class="bi bi-person-circle"></i>
+                    <div class="user-text">
+                        <b>@User.Identity.Name</b>
+                        <small>@vaiTro</small>
                     </div>
                 </div>
             </div>
+        </header>
 
-            <a class="brand" asp-controller="Home" asp-action="Index"><i class="bi bi-cpu"></i> KhoLinhKien</a>
-
-            <form class="search flex-grow-1" asp-controller="LinhKien" asp-action="Index" method="get">
-                <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Tìm kiếm linh kiện..." />
-                    <button class="btn btn-white" type="submit"><i class="bi bi-search"></i></button>
-                </div>
-            </form>
-
-            <partial name="_LoginPartial" />
-        </div>
-    </header>
-
-    <main class="page container">
+        <main class="main-area">
+            <div class="main-card">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+}
+else
+{
+    <main class="guest-area">
         @RenderBody()
     </main>
+}
 
-    <footer class="site-footer mt-5 py-4" id="lien-he">
-        <div class="container d-flex flex-wrap justify-content-between gap-2 small">
-            <span>&copy; 2026 Hệ thống quản lý kho linh kiện điện tử</span>
-            <span>ASP.NET Core MVC · SQL Server</span>
+    @if (TempData["ThongBao"] is string tbOk || TempData["Loi"] is string tbErr)
+    {
+        <div class="toast-stack">
+            @if (TempData["ThongBao"] is string okMsg)
+            {
+                <div class="toast-msg ok"><i class="bi bi-check-circle-fill"></i><span>@okMsg</span></div>
+            }
+            @if (TempData["Loi"] is string errMsg)
+            {
+                <div class="toast-msg err"><i class="bi bi-exclamation-triangle-fill"></i><span>@errMsg</span></div>
+            }
         </div>
-    </footer>
+    }
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
-    <script>
+            <script>
         (function () {
-            var btn = document.getElementById('menuBtn');
-            var panel = document.getElementById('menuPanel');
-            var icon = btn.querySelector('i');
+            // Nút mở sidebar trên màn hình nhỏ
+            var btn = document.getElementById('sidebarToggle');
+            if (btn) btn.addEventListener('click', function () { document.body.classList.toggle('sidebar-open'); });
 
-            function setOpen(open) {
-                panel.classList.toggle('open', open);
-                icon.className = open ? 'bi bi-x-lg' : 'bi bi-list';
-            }
+            var path = location.pathname.toLowerCase().replace(/\/$/, '') || '/';
 
-            btn.addEventListener('click', function (e) {
-                e.stopPropagation();
-                setOpen(!panel.classList.contains('open'));
-            });
+            document.querySelectorAll('.side-nav .side-link').forEach(function (a) {
+                // Tự sáng mục đang mở
+                var href = (a.getAttribute('href') || '').toLowerCase().replace(/\/$/, '');
+                if (href === '') href = '/';
+                var match = (href === '/' && (path === '/' || path === '/home' || path === '/home/index'))
+                         || (href !== '/' && href !== '#' && (path === href || path.indexOf(href + '/') === 0));
+                if (match) a.classList.add('active');
 
-            document.addEventListener('click', function (e) {
-                if (!panel.contains(e.target)) setOpen(false);
-            });
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') setOpen(false);
+                // Hiệu ứng gợn sóng khi nhấp (không chặn việc chuyển trang)
+                a.addEventListener('mousedown', function (e) {
+                    if (a.classList.contains('disabled')) return;
+                    var r = a.getBoundingClientRect();
+                    var s = document.createElement('span');
+                    s.className = 'ripple';
+                    s.style.left = (e.clientX - r.left) + 'px';
+                    s.style.top = (e.clientY - r.top) + 'px';
+                    a.appendChild(s);
+                    setTimeout(function () { s.remove(); }, 600);
+                });
             });
         })();
     </script>
-
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

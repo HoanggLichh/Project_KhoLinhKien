@@ -1,50 +1,175 @@
-﻿@{ ViewData["Title"] = "Trang chủ"; }
+﻿@{ ViewData["Title"] = "Tổng quan"; }
 
-<section class="hero">
-    <h1>Quản lý kho linh kiện điện thoại gọn gàng, chính xác</h1>
-    <p>
-        <b>Hệ thống kho linh kiện</b> giúp cửa hàng sửa chữa nhập kho, theo dõi tồn,
-        tra cứu vị trí và quản lý đơn sửa chữa trong một nơi duy nhất, có phân quyền rõ ràng cho từng vai trò.
-    </p>
-    @if (User.Identity!.IsAuthenticated)
-    {
-        <a class="btn btn-cta btn-lg" asp-controller="LinhKien" asp-action="Index">XEM LINH KIỆN</a>
-    }
-    else
-    {
-        <a class="btn btn-cta btn-lg" asp-controller="Account" asp-action="Login">ĐĂNG NHẬP</a>
-    }
-</section>
-
-<h3 class="block-title" id="tinh-nang">Tính năng nổi bật của hệ thống</h3>
-<div class="row g-3">
-    <div class="col-md-4">
-        <div class="outline-card">
-            <h6><i class="bi bi-shield-check"></i> Phân quyền rõ ràng</h6>
-            <p>Quản lý, Thủ kho, Kỹ thuật viên mỗi người chỉ thấy <b>đúng chức năng</b> của mình</p>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="outline-card">
-            <h6><i class="bi bi-box-seam"></i> Tồn kho chính xác</h6>
-            <p>Số tồn chỉ thay đổi qua <b>phiếu nhập</b> hoặc <b>đơn sửa chữa</b></p>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="outline-card">
-            <h6><i class="bi bi-bell"></i> Cảnh báo tồn thấp</h6>
-            <p>Biết trước khi <b>sắp hết linh kiện</b> để kịp nhập hàng</p>
-        </div>
-    </div>
-</div>
-
-@if (User.IsInRole("QuanLy") || User.IsInRole("ThuKho"))
+@if (!User.Identity!.IsAuthenticated)
 {
-    <h3 class="block-title">Chức năng chính</h3>
-    <div class="row g-3">
-        <div class="col-6 col-md-3"><a class="func-card" asp-controller="LinhKien" asp-action="Index"><i class="bi bi-motherboard"></i><h6 class="mt-2 mb-0">Linh kiện</h6></a></div>
-        <div class="col-6 col-md-3"><a class="func-card" asp-controller="LoaiLinhKien" asp-action="Index"><i class="bi bi-tags"></i><h6 class="mt-2 mb-0">Loại linh kiện</h6></a></div>
-        <div class="col-6 col-md-3"><a class="func-card" asp-controller="NhaCungCap" asp-action="Index"><i class="bi bi-truck"></i><h6 class="mt-2 mb-0">Nhà cung cấp</h6></a></div>
-        <div class="col-6 col-md-3"><a class="func-card" asp-controller="ViTriKho" asp-action="Index"><i class="bi bi-boxes"></i><h6 class="mt-2 mb-0">Vị trí lưu kho</h6></a></div>
+    <div class="text-center text-white anim" style="max-width:520px">
+        <h1 class="fw-bold mb-2"><i class="bi bi-cpu-fill"></i> L-INVENTORY</h1>
+        <p class="mb-4" style="color:#cbd5e1">Hệ thống quản lý kho linh kiện điện tử cho cửa hàng sửa chữa điện thoại</p>
+        <a class="btn btn-accent btn-lg px-5" asp-controller="Account" asp-action="Login">ĐĂNG NHẬP</a>
     </div>
+}
+else
+{
+    <div class="dash-head anim">
+        <h1>Dashboard Tổng Quan</h1>
+        <span class="dash-date">Hôm nay: @DateTime.Now.ToString("dd/MM/yyyy")</span>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-xl-3 anim" style="--d:.1s">
+            <div class="stat-card c-blue">
+                <div><div class="stat-label">Tổng linh kiện</div><div class="stat-value" data-count="1245">0</div></div>
+                <div class="stat-icon"><i class="bi bi-boxes"></i></div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3 anim" style="--d:.2s">
+            <div class="stat-card c-red">
+                <div><div class="stat-label">Sắp hết hàng</div><div class="stat-value" data-count="12">0</div></div>
+                <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3 anim" style="--d:.3s">
+            <div class="stat-card c-green">
+                <div><div class="stat-label">Đơn hoàn thành</div><div class="stat-value" data-count="48">0</div></div>
+                <div class="stat-icon"><i class="bi bi-clipboard-check-fill"></i></div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3 anim" style="--d:.4s">
+            <div class="stat-card c-cyan">
+                <div><div class="stat-label">Doanh thu tháng</div><div class="stat-value" data-count="15.4" data-dec="1" data-suffix="M">0</div></div>
+                <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-xl-8 anim anim-left" style="--d:.5s">
+            <div class="panel2">
+                <div class="panel2-head">
+                    <div class="panel2-title">
+                        <span class="title-icon blue"><i class="bi bi-wrench-adjustable"></i></span>
+                        <div>
+                            <h6>Đơn sửa chữa gần đây</h6>
+                            <small>3 đơn mới nhất</small>
+                        </div>
+                    </div>
+                    <a class="link-more" href="#">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+                </div>
+
+                <div class="order-list">
+                    <div class="order-row" style="--i:0">
+                        <div class="avatar a1">A</div>
+                        <div class="order-info">
+                            <b>Nguyễn Văn A</b>
+                            <small>iPhone 13 · Thay màn hình</small>
+                        </div>
+                        <span class="pill done"><i></i>Hoàn thành</span>
+                        <div class="order-money">
+                            <b>450,000đ</b>
+                            <small>#WO-001</small>
+                        </div>
+                    </div>
+
+                    <div class="order-row" style="--i:1">
+                        <div class="avatar a2">B</div>
+                        <div class="order-info">
+                            <b>Trần Thị B</b>
+                            <small>Samsung S22 · Thay pin</small>
+                        </div>
+                        <span class="pill doing"><i></i>Đang xử lý</span>
+                        <div class="order-money">
+                            <b>1,200,000đ</b>
+                            <small>#WO-002</small>
+                        </div>
+                    </div>
+
+                    <div class="order-row" style="--i:2">
+                        <div class="avatar a3">C</div>
+                        <div class="order-info">
+                            <b>Lê Văn C</b>
+                            <small>Xiaomi Note 8 · Thay cụm đuôi sạc</small>
+                        </div>
+                        <span class="pill wait"><i></i>Chờ linh kiện</span>
+                        <div class="order-money">
+                            <b class="muted">Chưa báo giá</b>
+                            <small>#WO-003</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 anim anim-right" style="--d:.6s">
+            <div class="panel2">
+                <div class="panel2-head">
+                    <div class="panel2-title">
+                        <span class="title-icon red"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                        <div>
+                            <h6>Cảnh báo tồn kho</h6>
+                            <small>Cần nhập thêm</small>
+                        </div>
+                    </div>
+                    <span class="count-pill">2</span>
+                </div>
+
+                <div class="stock-list">
+                    <div class="stock-item crit" style="--i:0">
+                        <div class="stock-top">
+                            <div class="stock-name">
+                                <b>Màn hình iPhone 13</b>
+                                <small><i class="bi bi-geo-alt-fill"></i> Kệ A1 - Tầng 2</small>
+                            </div>
+                            <div class="stock-qty"><b>2</b><span>/ 10</span></div>
+                        </div>
+                        <div class="bar"><div class="bar-fill" style="width:20%"></div></div>
+                        <div class="stock-foot">
+                            <span>Rất thấp, nhập gấp</span>
+                            <a href="#" class="btn-restock">Nhập thêm</a>
+                        </div>
+                    </div>
+
+                    <div class="stock-item crit" style="--i:1">
+                        <div class="stock-top">
+                            <div class="stock-name">
+                                <b>Pin Samsung S22</b>
+                                <small><i class="bi bi-geo-alt-fill"></i> Kệ B3 - Tầng 1</small>
+                            </div>
+                            <div class="stock-qty"><b>1</b><span>/ 5</span></div>
+                        </div>
+                        <div class="bar"><div class="bar-fill" style="width:20%"></div></div>
+                        <div class="stock-foot">
+                            <span>Rất thấp, nhập gấp</span>
+                            <a href="#" class="btn-restock">Nhập thêm</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            document.querySelectorAll('[data-count]').forEach(function (el) {
+                var end = parseFloat(el.dataset.count);
+                var dec = parseInt(el.dataset.dec || 0, 10);
+                var suffix = el.dataset.suffix || '';
+                function show(v) {
+                    el.textContent = v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suffix;
+                }
+                if (reduce) { show(end); return; }
+                var dur = 1400, start = null;
+                setTimeout(function () {
+                    requestAnimationFrame(function step(t) {
+                        if (start === null) start = t;
+                        var p = Math.min((t - start) / dur, 1);
+                        show(end * (1 - Math.pow(1 - p, 3)));
+                        if (p < 1) requestAnimationFrame(step);
+                    });
+                }, 250);
+            });
+        })();
+    </script>
 }
