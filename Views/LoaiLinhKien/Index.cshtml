@@ -1,34 +1,61 @@
 @model IEnumerable<KhoLinhKien.Models.LoaiLinhKien>
 @{
     ViewData["Title"] = "Loại linh kiện";
-    var coQuyen = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
+    var canEdit = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
+    var i = 0;
 }
 
-<h1>Loại linh kiện</h1>
-
-@if (coQuyen)
-{
-    <p><a asp-action="Create" class="btn btn-primary">Thêm loại mới</a></p>
-}
-
-<table class="table table-striped">
-    <thead>
-        <tr><th>Tên loại</th><th></th></tr>
-    </thead>
-    <tbody>
-    @foreach (var item in Model)
+<div class="page-head">
+    <div>
+        <h1>Loại linh kiện</h1>
+        <p>Nhóm linh kiện như pin, màn hình, camera, loa...</p>
+    </div>
+    @if (canEdit)
     {
-        <tr>
-            <td>@item.TenLoai</td>
-            <td>
-                @if (coQuyen)
-                {
-                    <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a>
-                    <span> | </span>
-                    <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
-                }
-            </td>
-        </tr>
+        <a class="btn-add" asp-action="Create"><i class="bi bi-plus-lg"></i> Thêm loại</a>
     }
-    </tbody>
-</table>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state"><i class="bi bi-tags"></i><b>Chưa có loại linh kiện nào</b><span>Bấm Thêm loại để bắt đầu.</span></div>
+}
+else
+{
+    <div class="toolbar">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" data-live-filter placeholder="Lọc nhanh theo tên loại..." />
+        </div>
+    </div>
+    <div class="result-count"><b>@Model.Count()</b> loại linh kiện</div>
+    <div class="tbl-wrap">
+        <table class="tbl" style="min-width:0">
+            <thead><tr><th style="width:70px">STT</th><th>Tên loại</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var x in Model)
+                {
+                    <tr data-filter-item style="--i:@Math.Min(i, 14)">
+                        <td class="num">@(++i)</td>
+                        <td><span class="tag"><i class="bi bi-tag-fill"></i> @x.TenLoai</span></td>
+                        <td>
+                            @if (canEdit)
+                            {
+                                <div class="actions">
+                                    <a class="icon-btn edit" asp-action="Edit" asp-route-id="@x.Id" title="Sửa"><i class="bi bi-pencil-square"></i></a>
+                                    <button type="button" class="icon-btn del" title="Xóa"
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                            data-delete-url="@Url.Action("Delete", new { id = x.Id })"
+                                            data-delete-name="@x.TenLoai"><i class="bi bi-trash3"></i></button>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div id="filterEmpty" class="empty-state" style="display:none"><i class="bi bi-search"></i><b>Không có kết quả phù hợp</b></div>
+    </div>
+}
+
+<partial name="_PageTools" />

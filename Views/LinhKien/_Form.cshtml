@@ -1,0 +1,96 @@
+@model KhoLinhKien.Models.LinhKien
+@{
+    var isEdit = (string?)ViewContext.RouteData.Values["action"] == "Edit";
+    var actionName = isEdit ? "Edit" : "Create";
+    var iconClass = isEdit ? "bi-pencil-square" : "bi-plus-circle-fill";
+    var dsLoai = (SelectList)ViewData["LoaiLinhKienId"]!;
+    var dsViTri = (SelectList)ViewData["ViTriKhoId"]!;
+}
+
+<a class="back-link" asp-action="Index"><i class="bi bi-arrow-left"></i> Quay lại danh sách</a>
+
+<div class="form-card">
+    <div class="form-card-head">
+        <span class="fc-icon"><i class="bi @iconClass"></i></span>
+        <div>
+            <h4>@(isEdit ? "Sửa linh kiện" : "Thêm linh kiện mới")</h4>
+            <small>Các ô có dấu * là bắt buộc</small>
+        </div>
+    </div>
+
+    <form asp-action="@actionName" method="post">
+        <div asp-validation-summary="ModelOnly" class="form-alert"></div>
+        @if (isEdit) { <input type="hidden" asp-for="Id" /> }
+
+        <div class="form-body">
+            <div class="field">
+                <label asp-for="MaLinhKien">Mã linh kiện <span class="req">*</span></label>
+                <div class="input-icon">
+                    <i class="bi bi-upc-scan"></i>
+                    <input asp-for="MaLinhKien" class="form-ctl" placeholder="VD: LCD-IP11" autocomplete="off" />
+                </div>
+                <span asp-validation-for="MaLinhKien" class="field-error"></span>
+                <span class="hint">Mã duy nhất, tự chuyển thành chữ in hoa</span>
+            </div>
+
+            <div class="field">
+                <label asp-for="LoaiLinhKienId">Loại linh kiện <span class="req">*</span></label>
+                <select asp-for="LoaiLinhKienId" asp-items="dsLoai" class="form-ctl"></select>
+                <span asp-validation-for="LoaiLinhKienId" class="field-error"></span>
+            </div>
+
+            <div class="field full">
+                <label asp-for="TenLinhKien">Tên linh kiện <span class="req">*</span></label>
+                <div class="input-icon">
+                    <i class="bi bi-motherboard"></i>
+                    <input asp-for="TenLinhKien" class="form-ctl" placeholder="VD: Màn hình iPhone 11" />
+                </div>
+                <span asp-validation-for="TenLinhKien" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="ViTriKhoId">Vị trí lưu kho</label>
+                <select asp-for="ViTriKhoId" asp-items="dsViTri" class="form-ctl"><option value="">-- Chưa gán vị trí --</option></select>
+                <span asp-validation-for="ViTriKhoId" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="DongMayTuongThich">Dòng máy tương thích</label>
+                <div class="input-icon">
+                    <i class="bi bi-phone"></i>
+                    <input asp-for="DongMayTuongThich" class="form-ctl" placeholder="VD: iPhone 11, 11 Pro" />
+                </div>
+                <span asp-validation-for="DongMayTuongThich" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="DonGia">Đơn giá (đ)</label>
+                <div class="input-icon">
+                    <i class="bi bi-cash-coin"></i>
+                    <input asp-for="DonGia" class="form-ctl" inputmode="numeric" placeholder="VD: 450000" />
+                </div>
+                <span asp-validation-for="DonGia" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="TonToiThieu">Tồn tối thiểu</label>
+                <div class="input-icon">
+                    <i class="bi bi-bell"></i>
+                    <input asp-for="TonToiThieu" class="form-ctl" inputmode="numeric" />
+                </div>
+                <span asp-validation-for="TonToiThieu" class="field-error"></span>
+                <span class="hint">Tồn thấp hơn mức này sẽ báo "Sắp hết"</span>
+            </div>
+
+            <div class="note-box">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>Số lượng tồn không sửa tay ở đây. Nó chỉ thay đổi khi lập phiếu nhập hoặc đơn sửa chữa.</span>
+            </div>
+        </div>
+
+        <div class="form-foot">
+            <a class="btn-cancel" asp-action="Index">Hủy</a>
+            <button type="submit" class="btn-save"><i class="bi bi-check2-circle"></i> Lưu linh kiện</button>
+        </div>
+    </form>
+</div>

@@ -1,37 +1,60 @@
 @model IEnumerable<KhoLinhKien.Models.ViTriKho>
 @{
-    ViewData["Title"] = "Vị trí kho";
-    var coQuyen = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
+    ViewData["Title"] = "Vị trí lưu kho";
+    var canEdit = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
+    var i = 0;
 }
 
-<h1>Vị trí lưu kho</h1>
-
-@if (coQuyen)
-{
-    <p><a asp-action="Create" class="btn btn-primary">Thêm vị trí mới</a></p>
-}
-
-<table class="table table-striped">
-    <thead>
-        <tr><th>Tên vị trí</th><th>Ghi chú</th><th></th></tr>
-    </thead>
-    <tbody>
-    @foreach (var item in Model)
+<div class="page-head">
+    <div>
+        <h1>Vị trí lưu kho</h1>
+        <p>Kệ và ngăn chứa linh kiện. Bấm vào một vị trí để xem hoặc gán linh kiện.</p>
+    </div>
+    @if (canEdit)
     {
-        <tr>
-            <td>@item.TenViTri</td>
-            <td>@item.GhiChu</td>
-            <td>
-                <a asp-action="Details" asp-route-id="@item.Id">Xem linh kiện</a>
-                @if (coQuyen)
-                {
-                    <span> | </span>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a>
-                    <span> | </span>
-                    <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
-                }
-            </td>
-        </tr>
+        <a class="btn-add" asp-action="Create"><i class="bi bi-plus-lg"></i> Thêm vị trí</a>
     }
-    </tbody>
-</table>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state"><i class="bi bi-boxes"></i><b>Chưa có vị trí nào</b><span>Bấm Thêm vị trí để tạo kệ và ngăn đầu tiên.</span></div>
+}
+else
+{
+    <div class="toolbar">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" data-live-filter placeholder="Lọc nhanh theo tên vị trí hoặc ghi chú..." />
+        </div>
+    </div>
+    <div class="result-count"><b>@Model.Count()</b> vị trí</div>
+    <div class="loc-grid">
+        @foreach (var x in Model)
+        {
+            <div class="loc-card" data-filter-item style="--i:@Math.Min(i++, 14)">
+                <div class="loc-top">
+                    <span class="loc-icon"><i class="bi bi-box-seam"></i></span>
+                    <b>@x.TenViTri</b>
+                </div>
+                <div class="loc-note">@(string.IsNullOrWhiteSpace(x.GhiChu) ? "Không có ghi chú" : x.GhiChu)</div>
+                <div class="loc-foot">
+                    <a class="link-soft" asp-action="Details" asp-route-id="@x.Id">Xem linh kiện <i class="bi bi-arrow-right"></i></a>
+                    @if (canEdit)
+                    {
+                        <div class="actions">
+                            <a class="icon-btn edit" asp-action="Edit" asp-route-id="@x.Id" title="Sửa"><i class="bi bi-pencil-square"></i></a>
+                            <button type="button" class="icon-btn del" title="Xóa"
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                    data-delete-url="@Url.Action("Delete", new { id = x.Id })"
+                                    data-delete-name="@x.TenViTri"><i class="bi bi-trash3"></i></button>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <div id="filterEmpty" class="empty-state" style="display:none"><i class="bi bi-search"></i><b>Không có kết quả phù hợp</b></div>
+}
+
+<partial name="_PageTools" />

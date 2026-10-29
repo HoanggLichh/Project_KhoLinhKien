@@ -1,0 +1,38 @@
+@model KhoLinhKien.Models.ViTriKho
+@{
+    var isEdit = (string?)ViewContext.RouteData.Values["action"] == "Edit";
+    var actionName = isEdit ? "Edit" : "Create";
+    var iconClass = isEdit ? "bi-pencil-square" : "bi-plus-circle-fill";
+}
+
+<a class="back-link" asp-action="Index"><i class="bi bi-arrow-left"></i> Quay lại danh sách</a>
+
+<div class="form-card" style="max-width:600px">
+    <div class="form-card-head">
+        <span class="fc-icon"><i class="bi @iconClass"></i></span>
+        <div><h4>@(isEdit ? "Sửa vị trí" : "Thêm vị trí mới")</h4><small>Ô có dấu * là bắt buộc</small></div>
+    </div>
+    <form asp-action="@actionName" method="post">
+        <div asp-validation-summary="ModelOnly" class="form-alert"></div>
+        @if (isEdit) { <input type="hidden" asp-for="Id" /> }
+        <div class="form-body" style="grid-template-columns:1fr">
+            <div class="field">
+                <label asp-for="TenViTri">Tên vị trí <span class="req">*</span></label>
+                <div class="input-icon">
+                    <i class="bi bi-geo-alt"></i>
+                    <input asp-for="TenViTri" class="form-ctl" placeholder="VD: Kệ A - Ngăn 2" autocomplete="off" />
+                </div>
+                <span asp-validation-for="TenViTri" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="GhiChu">Ghi chú</label>
+                <textarea asp-for="GhiChu" class="form-ctl" rows="3" placeholder="VD: Chứa màn hình iPhone"></textarea>
+                <span asp-validation-for="GhiChu" class="field-error"></span>
+            </div>
+        </div>
+        <div class="form-foot">
+            <a class="btn-cancel" asp-action="Index">Hủy</a>
+            <button type="submit" class="btn-save"><i class="bi bi-check2-circle"></i> Lưu</button>
+        </div>
+    </form>
+</div>

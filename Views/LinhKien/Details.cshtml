@@ -1,27 +1,37 @@
 @model KhoLinhKien.Models.LinhKien
 @{
     ViewData["Title"] = "Chi tiết linh kiện";
+    var canEdit = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
+    var tt = Model.SoLuongTon <= 0 ? "wait" : Model.SoLuongTon <= Model.TonToiThieu ? "doing" : "done";
+    var nhan = Model.SoLuongTon <= 0 ? "Hết hàng" : Model.SoLuongTon <= Model.TonToiThieu ? "Sắp hết" : "Đủ hàng";
+    var pct = Model.TonToiThieu > 0 ? Math.Min(100, (int)(Model.SoLuongTon * 100.0 / (Model.TonToiThieu * 2))) : (Model.SoLuongTon > 0 ? 100 : 0);
 }
 
-<h1>Chi tiết linh kiện</h1>
+<a class="back-link" asp-action="Index"><i class="bi bi-arrow-left"></i> Quay lại danh sách</a>
 
-<dl class="row">
-    <dt class="col-sm-3">Mã linh kiện</dt>
-    <dd class="col-sm-9">@Model.MaLinhKien</dd>
-    <dt class="col-sm-3">Tên linh kiện</dt>
-    <dd class="col-sm-9">@Model.TenLinhKien</dd>
-    <dt class="col-sm-3">Loại</dt>
-    <dd class="col-sm-9">@Model.LoaiLinhKien?.TenLoai</dd>
-    <dt class="col-sm-3">Đang để ở</dt>
-    <dd class="col-sm-9">@(Model.ViTriKho?.TenViTri ?? "Chưa gán vị trí")</dd>
-    <dt class="col-sm-3">Dòng máy tương thích</dt>
-    <dd class="col-sm-9">@Model.DongMayTuongThich</dd>
-    <dt class="col-sm-3">Đơn giá</dt>
-    <dd class="col-sm-9">@Model.DonGia.ToString("N0") đ</dd>
-    <dt class="col-sm-3">Số lượng tồn</dt>
-    <dd class="col-sm-9">@Model.SoLuongTon</dd>
-    <dt class="col-sm-3">Tồn tối thiểu</dt>
-    <dd class="col-sm-9">@Model.TonToiThieu</dd>
-</dl>
+<div class="detail-wrap">
+    <div class="detail-card">
+        <span class="code-chip">@Model.MaLinhKien</span>
+        <h2>@Model.TenLinhKien</h2>
+        <div class="detail-grid">
+            <div class="detail-item"><small>Loại linh kiện</small><b>@Model.LoaiLinhKien?.TenLoai</b></div>
+            <div class="detail-item"><small>Vị trí lưu kho</small><b>@(Model.ViTriKho?.TenViTri ?? "Chưa gán")</b></div>
+            <div class="detail-item"><small>Dòng máy tương thích</small><b>@(string.IsNullOrWhiteSpace(Model.DongMayTuongThich) ? "Chưa ghi" : Model.DongMayTuongThich)</b></div>
+            <div class="detail-item"><small>Đơn giá</small><b>@(Model.DonGia.ToString("N0") + "đ")</b></div>
+        </div>
+        @if (canEdit)
+        {
+            <div class="mt-4 d-flex gap-2">
+                <a class="btn-save" asp-action="Edit" asp-route-id="@Model.Id" style="text-decoration:none"><i class="bi bi-pencil-square"></i> Sửa linh kiện</a>
+            </div>
+        }
+    </div>
 
-<a asp-action="Index">Quay lại danh sách</a>
+    <div class="detail-card stock-big">
+        <small class="text-muted text-uppercase">Số lượng tồn</small>
+        <div class="big">@Model.SoLuongTon</div>
+        <div class="sub">Tồn tối thiểu: @Model.TonToiThieu</div>
+        <div class="bar-soft"><div class="@tt" style="width:@pct%"></div></div>
+        <span class="pill @tt"><i></i>@nhan</span>
+    </div>
+</div>

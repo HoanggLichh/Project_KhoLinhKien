@@ -1,36 +1,73 @@
 @model IEnumerable<KhoLinhKien.Models.NhaCungCap>
 @{
     ViewData["Title"] = "Nhà cung cấp";
-    var coQuyen = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
+    var canEdit = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
+    var i = 0;
 }
 
-<h1>Nhà cung cấp</h1>
-
-@if (coQuyen)
-{
-    <p><a asp-action="Create" class="btn btn-primary">Thêm nhà cung cấp</a></p>
-}
-
-<table class="table table-striped">
-    <thead>
-        <tr><th>Tên nhà cung cấp</th><th>Số điện thoại</th><th>Địa chỉ</th><th></th></tr>
-    </thead>
-    <tbody>
-    @foreach (var item in Model)
+<div class="page-head">
+    <div>
+        <h1>Nhà cung cấp</h1>
+        <p>Nơi nhập linh kiện về kho</p>
+    </div>
+    @if (canEdit)
     {
-        <tr>
-            <td>@item.TenNhaCungCap</td>
-            <td>@item.SoDienThoai</td>
-            <td>@item.DiaChi</td>
-            <td>
-                @if (coQuyen)
-                {
-                    <a asp-action="Edit" asp-route-id="@item.Id">Sửa</a>
-                    <span> | </span>
-                    <a asp-action="Delete" asp-route-id="@item.Id">Xóa</a>
-                }
-            </td>
-        </tr>
+        <a class="btn-add" asp-action="Create"><i class="bi bi-plus-lg"></i> Thêm nhà cung cấp</a>
     }
-    </tbody>
-</table>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state"><i class="bi bi-truck"></i><b>Chưa có nhà cung cấp nào</b><span>Bấm Thêm nhà cung cấp để bắt đầu.</span></div>
+}
+else
+{
+    <div class="toolbar">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" data-live-filter placeholder="Lọc nhanh theo tên, số điện thoại, địa chỉ..." />
+        </div>
+    </div>
+    <div class="result-count"><b>@Model.Count()</b> nhà cung cấp</div>
+    <div class="tbl-wrap">
+        <table class="tbl">
+            <thead><tr><th>Nhà cung cấp</th><th>Số điện thoại</th><th>Địa chỉ</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var x in Model)
+                {
+                    <tr data-filter-item style="--i:@Math.Min(i++, 14)">
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="avatar-sm">@x.TenNhaCungCap.Substring(0, 1).ToUpper()</span>
+                                <b>@x.TenNhaCungCap</b>
+                            </div>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(x.SoDienThoai))
+                            {
+                                <a class="link-soft" href="tel:@x.SoDienThoai"><i class="bi bi-telephone-fill"></i> @x.SoDienThoai</a>
+                            }
+                            else { <span class="tag muted">Chưa có</span> }
+                        </td>
+                        <td>@(string.IsNullOrWhiteSpace(x.DiaChi) ? "—" : x.DiaChi)</td>
+                        <td>
+                            @if (canEdit)
+                            {
+                                <div class="actions">
+                                    <a class="icon-btn edit" asp-action="Edit" asp-route-id="@x.Id" title="Sửa"><i class="bi bi-pencil-square"></i></a>
+                                    <button type="button" class="icon-btn del" title="Xóa"
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                            data-delete-url="@Url.Action("Delete", new { id = x.Id })"
+                                            data-delete-name="@x.TenNhaCungCap"><i class="bi bi-trash3"></i></button>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div id="filterEmpty" class="empty-state" style="display:none"><i class="bi bi-search"></i><b>Không có kết quả phù hợp</b></div>
+    </div>
+}
+
+<partial name="_PageTools" />
