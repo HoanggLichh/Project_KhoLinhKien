@@ -1,0 +1,43 @@
+@model KhoLinhKien.Models.PhieuNhap
+@{
+    ViewData["Title"] = "Phiếu nhập PN-" + Model.Id.ToString("D4");
+    var tong = Model.ChiTiets.Sum(c => c.SoLuong * c.DonGia);
+    var tongSl = Model.ChiTiets.Sum(c => c.SoLuong);
+}
+
+<a class="back-link" asp-action="Index"><i class="bi bi-arrow-left"></i> Quay lại danh sách phiếu</a>
+
+<div class="detail-card" style="margin-bottom:1rem">
+    <span class="code-chip">PN-@Model.Id.ToString("D4")</span>
+    <h2>Phiếu nhập kho</h2>
+    <div class="detail-grid">
+        <div class="detail-item"><small>Nhà cung cấp</small><b>@Model.NhaCungCap?.TenNhaCungCap</b></div>
+        <div class="detail-item"><small>Ngày nhập</small><b>@Model.NgayNhap.ToString("dd/MM/yyyy")</b></div>
+        <div class="detail-item"><small>Người lập</small><b>@(Model.NguoiLap ?? "—")</b></div>
+        <div class="detail-item"><small>Ghi chú</small><b>@(string.IsNullOrWhiteSpace(Model.GhiChu) ? "—" : Model.GhiChu)</b></div>
+    </div>
+</div>
+
+<div class="tbl-wrap">
+    <table class="tbl" style="min-width:0">
+        <thead><tr><th>STT</th><th>Linh kiện</th><th>Số lượng</th><th>Đơn giá nhập</th><th>Thành tiền</th></tr></thead>
+        <tbody>
+            @{ var stt = 0; }
+            @foreach (var c in Model.ChiTiets)
+            {
+                <tr style="--i:@stt">
+                    <td class="num">@(++stt)</td>
+                    <td class="cell-title"><b>@c.LinhKien?.TenLinhKien</b><small>@c.LinhKien?.MaLinhKien</small></td>
+                    <td class="num">@c.SoLuong</td>
+                    <td>@(c.DonGia.ToString("N0") + "đ")</td>
+                    <td class="num">@((c.SoLuong * c.DonGia).ToString("N0") + "đ")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="total-bar">
+    <span>Tổng số lượng: <b>@tongSl</b></span>
+    <span>Tổng tiền: <b>@(tong.ToString("N0") + "đ")</b></span>
+</div>

@@ -1,0 +1,68 @@
+@model IEnumerable<KhoLinhKien.Models.DonSuaChua>
+@{
+    ViewData["Title"] = "Đơn sửa chữa";
+    var tt = ViewData["TrangThai"] as string;
+    var i = 0;
+}
+
+<div class="page-head">
+    <div>
+        <h1>Đơn sửa chữa</h1>
+        <p>Theo dõi máy nhận về, linh kiện đã dùng và tiến độ sửa.</p>
+    </div>
+    @if (User.IsInRole("QuanLy") || User.IsInRole("KyThuatVien"))
+    {
+        <a class="btn-add" asp-action="Create"><i class="bi bi-plus-lg"></i> Tạo đơn mới</a>
+    }
+</div>
+
+<div class="toolbar">
+    <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" data-live-filter placeholder="Lọc nhanh theo mã đơn, khách, máy, số điện thoại..." />
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="tag @(string.IsNullOrEmpty(tt) ? "fw-bold" : "")" asp-action="Index">Tất cả</a>
+        <a class="tag @(tt == "NhanMay" ? "fw-bold" : "")" asp-action="Index" asp-route-trangThai="NhanMay">Nhận máy</a>
+        <a class="tag @(tt == "DangSua" ? "fw-bold" : "")" asp-action="Index" asp-route-trangThai="DangSua">Đang sửa</a>
+        <a class="tag @(tt == "HoanTat" ? "fw-bold" : "")" asp-action="Index" asp-route-trangThai="HoanTat">Hoàn tất</a>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state"><i class="bi bi-wrench-adjustable"></i><b>Chưa có đơn sửa chữa nào</b><span>Bấm Tạo đơn mới khi có máy cần sửa.</span></div>
+}
+else
+{
+    <div class="result-count"><b>@Model.Count()</b> đơn</div>
+    <div class="tbl-wrap">
+        <table class="tbl">
+            <thead>
+                <tr><th>Mã đơn</th><th>Khách hàng</th><th>Máy / lỗi</th><th>Ngày nhận</th><th>Trạng thái</th><th>Tổng tiền</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var x in Model)
+                {
+                    var tong = x.CongTho + x.ChiTiets.Sum(c => c.SoLuong * c.DonGia);
+                    <tr data-filter-item style="--i:@Math.Min(i++, 14)">
+                        <td><span class="code-chip">WO-@x.Id.ToString("D3")</span></td>
+                        <td class="cell-title"><b>@x.TenKhach</b><small>@x.SoDienThoai</small></td>
+                        <td class="cell-title"><b>@x.TenMay</b><small>@x.MoTaLoi</small></td>
+                        <td>@x.NgayNhan.ToString("dd/MM/yyyy")</td>
+                        <td><span class="pill @TrangThaiDon.Mau(x.TrangThai)"><i></i>@TrangThaiDon.Ten(x.TrangThai)</span></td>
+                        <td class="num">@(tong > 0 ? tong.ToString("N0") + "đ" : "—")</td>
+                        <td>
+                            <div class="actions">
+                                <a class="icon-btn view" asp-action="Details" asp-route-id="@x.Id" title="Xem chi tiết"><i class="bi bi-eye"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div id="filterEmpty" class="empty-state" style="display:none"><i class="bi bi-search"></i><b>Không có kết quả phù hợp</b></div>
+    </div>
+}
+
+<partial name="_PageTools" />

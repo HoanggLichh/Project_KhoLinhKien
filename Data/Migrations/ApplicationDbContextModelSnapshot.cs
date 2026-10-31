@@ -30,6 +30,10 @@ namespace KhoLinhKien.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("DonGia")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("DonSuaChuaId")
                         .HasColumnType("int");
 
@@ -56,7 +60,7 @@ namespace KhoLinhKien.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("DonGiaNhap")
+                    b.Property<decimal>("DonGia")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -86,12 +90,21 @@ namespace KhoLinhKien.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("CongTho")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("MoTaLoi")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime>("NgayNhan")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("NguoiLap")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("SoDienThoai")
                         .IsRequired()
@@ -99,15 +112,18 @@ namespace KhoLinhKien.Data.Migrations
 
                     b.Property<string>("TenKhach")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("TenMay")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("TrangThai")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
@@ -216,8 +232,16 @@ namespace KhoLinhKien.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("GhiChu")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
                     b.Property<DateTime>("NgayNhap")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("NguoiLap")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<int>("NhaCungCapId")
                         .HasColumnType("int");
@@ -455,8 +479,8 @@ namespace KhoLinhKien.Data.Migrations
 
             modelBuilder.Entity("KhoLinhKien.Models.ChiTietDonSuaChua", b =>
                 {
-                    b.HasOne("KhoLinhKien.Models.DonSuaChua", null)
-                        .WithMany("ChiTiet")
+                    b.HasOne("KhoLinhKien.Models.DonSuaChua", "DonSuaChua")
+                        .WithMany("ChiTiets")
                         .HasForeignKey("DonSuaChuaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -466,6 +490,8 @@ namespace KhoLinhKien.Data.Migrations
                         .HasForeignKey("LinhKienId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("DonSuaChua");
 
                     b.Navigation("LinhKien");
                 });
@@ -478,13 +504,15 @@ namespace KhoLinhKien.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("KhoLinhKien.Models.PhieuNhap", null)
-                        .WithMany("ChiTiet")
+                    b.HasOne("KhoLinhKien.Models.PhieuNhap", "PhieuNhap")
+                        .WithMany("ChiTiets")
                         .HasForeignKey("PhieuNhapId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("LinhKien");
+
+                    b.Navigation("PhieuNhap");
                 });
 
             modelBuilder.Entity("KhoLinhKien.Models.LinhKien", b =>
@@ -568,12 +596,12 @@ namespace KhoLinhKien.Data.Migrations
 
             modelBuilder.Entity("KhoLinhKien.Models.DonSuaChua", b =>
                 {
-                    b.Navigation("ChiTiet");
+                    b.Navigation("ChiTiets");
                 });
 
             modelBuilder.Entity("KhoLinhKien.Models.PhieuNhap", b =>
                 {
-                    b.Navigation("ChiTiet");
+                    b.Navigation("ChiTiets");
                 });
 #pragma warning restore 612, 618
         }

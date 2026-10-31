@@ -1,0 +1,161 @@
+@model KhoLinhKien.Models.PhieuNhapCreateVM
+@{
+    ViewData["Title"] = "Lập phiếu nhập";
+    var dsNcc = (SelectList)ViewData["NhaCungCapId"]!;
+    var linhKiens = (List<KhoLinhKien.Models.LinhKienChonVM>)ViewData["LinhKiens"]!;
+}
+
+<a class="back-link" asp-action="Index"><i class="bi bi-arrow-left"></i> Quay lại danh sách phiếu</a>
+
+<div class="form-card" style="max-width:1000px">
+    <div class="form-card-head">
+        <span class="fc-icon"><i class="bi bi-box-arrow-in-down"></i></span>
+        <div><h4>Lập phiếu nhập kho</h4><small>Thêm các dòng linh kiện nhập về. Lưu phiếu thì tồn kho tự tăng.</small></div>
+    </div>
+
+    <form asp-action="Create" method="post" id="phieuForm">
+        <div asp-validation-summary="ModelOnly" class="form-alert"></div>
+
+        <div class="form-body">
+            <div class="field">
+                <label asp-for="NhaCungCapId">Nhà cung cấp <span class="req">*</span></label>
+                <select asp-for="NhaCungCapId" asp-items="dsNcc" class="form-ctl"><option value="">-- Chọn nhà cung cấp --</option></select>
+                <span asp-validation-for="NhaCungCapId" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="NgayNhap">Ngày nhập</label>
+                <input asp-for="NgayNhap" type="date" class="form-ctl" value="@Model.NgayNhap.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="field full">
+                <label asp-for="GhiChu">Ghi chú</label>
+                <input asp-for="GhiChu" class="form-ctl" placeholder="VD: Nhập hàng đợt 1 tháng 11" />
+                <span asp-validation-for="GhiChu" class="field-error"></span>
+            </div>
+        </div>
+
+        <div style="padding:0 1.6rem 1rem">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0 fw-bold">Danh sách linh kiện nhập</h6>
+                <button type="button" class="btn-primary-soft" id="btnThemDong"><i class="bi bi-plus-circle"></i> Thêm dòng</button>
+            </div>
+            <div class="tbl-wrap">
+                <table class="tbl lines" style="min-width:680px">
+                    <thead><tr><th style="width:50px">#</th><th>Linh kiện</th><th style="width:110px">Số lượng</th><th style="width:160px">Đơn giá nhập</th><th style="width:150px">Thành tiền</th><th style="width:56px"></th></tr></thead>
+                    <tbody id="dongBody"></tbody>
+                </table>
+            </div>
+            <div id="loiDong" class="field-error" style="margin-top:.6rem"></div>
+        </div>
+
+        <div class="total-bar" style="margin:0 1.6rem 1.2rem">
+            <span>Tổng số lượng: <b id="tongSl">0</b></span>
+            <span>Tổng tiền: <b id="tongTien">0đ</b></span>
+        </div>
+
+        <div class="form-foot">
+            <a class="btn-cancel" asp-action="Index">Hủy</a>
+            <button type="submit" class="btn-save"><i class="bi bi-check2-circle"></i> Lưu phiếu nhập</button>
+        </div>
+    </form>
+</div>
+
+<template id="rowTpl">
+    <tr>
+        <td class="num stt">1</td>
+        <td>
+            <select class="form-ctl" data-name="LinhKienId">
+                <option value="0">-- Chọn linh kiện --</option>
+                @foreach (var lk in linhKiens)
+                {
+                    <option value="@lk.Id" data-gia="@((long)lk.DonGia)" data-ton="@lk.Ton">@lk.Ten</option>
+                }
+            </select>
+            <small class="text-muted ton-info"></small>
+        </td>
+        <td><input type="number" class="form-ctl" data-name="SoLuong" min="1" value="1" /></td>
+        <td><input type="number" class="form-ctl" data-name="DonGia" min="0" step="1000" value="0" /></td>
+        <td class="num thanh-tien">0đ</td>
+        <td><button type="button" class="icon-btn del btn-xoa" title="Xóa dòng"><i class="bi bi-x-lg"></i></button></td>
+    </tr>
+</template>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var body = document.getElementById('dongBody');
+            var tpl = document.getElementById('rowTpl');
+            var cu = @Json.Serialize(Model.Dongs);   // dữ liệu cũ khi form báo lỗi
+
+            function dinhDang(n) { return Math.round(n).toLocaleString('en-US') + 'đ'; }
+
+            function danhSoLai() {
+                Array.prototype.forEach.call(body.children, function (tr, i) {
+                    tr.querySelector('.stt').textContent = i + 1;
+                    tr.querySelectorAll('[data-name]').forEach(function (el) {
+                        el.name = 'Dongs[' + i + '].' + el.dataset.name;
+                    });
+                });
+            }
+
+            function tinhTong() {
+                var sl = 0, tien = 0;
+                Array.prototype.forEach.call(body.children, function (tr) {
+                    var q = parseInt(tr.querySelector('[data-name=SoLuong]').value) || 0;
+                    var g = parseFloat(tr.querySelector('[data-name=DonGia]').value) || 0;
+                    tr.querySelector('.thanh-tien').textContent = dinhDang(q * g);
+                    sl += q; tien += q * g;
+                });
+                document.getElementById('tongSl').textContent = sl;
+                document.getElementById('tongTien').textContent = dinhDang(tien);
+            }
+
+            function themDong(d) {
+                var tr = tpl.content.firstElementChild.cloneNode(true);
+                var sel = tr.querySelector('[data-name=LinhKienId]');
+                var sl = tr.querySelector('[data-name=SoLuong]');
+                var gia = tr.querySelector('[data-name=DonGia]');
+
+                if (d) { sel.value = d.linhKienId; sl.value = d.soLuong; gia.value = d.donGia; }
+
+                sel.addEventListener('change', function () {
+                    var opt = sel.options[sel.selectedIndex];
+                    tr.querySelector('.ton-info').textContent = opt.dataset.ton ? 'Tồn hiện tại: ' + opt.dataset.ton : '';
+                    if (opt.dataset.gia && (!gia.value || gia.value === '0')) gia.value = opt.dataset.gia;
+                    tinhTong();
+                });
+                sl.addEventListener('input', tinhTong);
+                gia.addEventListener('input', tinhTong);
+                tr.querySelector('.btn-xoa').addEventListener('click', function () {
+                    tr.remove(); danhSoLai(); tinhTong();
+                });
+
+                body.appendChild(tr);
+                danhSoLai();
+                sel.dispatchEvent(new Event('change'));
+            }
+
+            document.getElementById('btnThemDong').addEventListener('click', function () { themDong(); });
+
+            document.getElementById('phieuForm').addEventListener('submit', function (e) {
+                var loi = document.getElementById('loiDong');
+                var dung = new Set(), thongBao = '';
+                var rows = Array.prototype.slice.call(body.children);
+                if (rows.length === 0) thongBao = 'Hãy thêm ít nhất 1 dòng linh kiện.';
+                rows.forEach(function (tr) {
+                    var id = tr.querySelector('[data-name=LinhKienId]').value;
+                    var q = parseInt(tr.querySelector('[data-name=SoLuong]').value) || 0;
+                    if (id === '0') thongBao = thongBao || 'Có dòng chưa chọn linh kiện.';
+                    else if (dung.has(id)) thongBao = thongBao || 'Một linh kiện chỉ nên có 1 dòng trong phiếu.';
+                    if (q <= 0) thongBao = thongBao || 'Số lượng mỗi dòng phải lớn hơn 0.';
+                    dung.add(id);
+                });
+                loi.textContent = thongBao;
+                if (thongBao) e.preventDefault();
+            });
+
+            if (cu && cu.length) cu.forEach(themDong); else themDong();
+            tinhTong();
+        })();
+    </script>
+}

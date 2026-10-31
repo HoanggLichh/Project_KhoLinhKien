@@ -1,0 +1,54 @@
+@model KhoLinhKien.Models.DonSuaChua
+@{
+    ViewData["Title"] = "Đơn WO-" + Model.Id.ToString("D3");
+    var tienLk = Model.ChiTiets.Sum(c => c.SoLuong * c.DonGia);
+    var tong = tienLk + Model.CongTho;
+    var stt = 0;
+}
+
+<a class="back-link" asp-action="Index"><i class="bi bi-arrow-left"></i> Quay lại danh sách đơn</a>
+
+<div class="detail-card" style="margin-bottom:1rem">
+    <span class="code-chip">WO-@Model.Id.ToString("D3")</span>
+    <span class="pill @TrangThaiDon.Mau(Model.TrangThai)" style="margin-left:.5rem"><i></i>@TrangThaiDon.Ten(Model.TrangThai)</span>
+    <h2>@Model.TenMay</h2>
+    <div class="detail-grid">
+        <div class="detail-item"><small>Khách hàng</small><b>@Model.TenKhach</b></div>
+        <div class="detail-item"><small>Số điện thoại</small><b>@Model.SoDienThoai</b></div>
+        <div class="detail-item"><small>Ngày nhận</small><b>@Model.NgayNhan.ToString("dd/MM/yyyy")</b></div>
+        <div class="detail-item"><small>Người lập đơn</small><b>@(Model.NguoiLap ?? "—")</b></div>
+        <div class="detail-item" style="grid-column:1/-1"><small>Mô tả lỗi</small><b>@Model.MoTaLoi</b></div>
+    </div>
+</div>
+
+<h6 class="fw-bold mb-2">Linh kiện đã dùng</h6>
+@if (!Model.ChiTiets.Any())
+{
+    <div class="empty-state"><i class="bi bi-cpu"></i><b>Chưa xuất linh kiện cho đơn này</b></div>
+}
+else
+{
+    <div class="tbl-wrap">
+        <table class="tbl" style="min-width:0">
+            <thead><tr><th>STT</th><th>Linh kiện</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+            <tbody>
+                @foreach (var c in Model.ChiTiets)
+                {
+                    <tr>
+                        <td class="num">@(++stt)</td>
+                        <td class="cell-title"><b>@c.LinhKien?.TenLinhKien</b><small>@c.LinhKien?.MaLinhKien</small></td>
+                        <td class="num">@c.SoLuong</td>
+                        <td>@(c.DonGia.ToString("N0") + "đ")</td>
+                        <td class="num">@((c.SoLuong * c.DonGia).ToString("N0") + "đ")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="total-bar">
+    <span>Tiền linh kiện: <b>@(tienLk.ToString("N0") + "đ")</b></span>
+    <span>Tiền công: <b>@(Model.CongTho.ToString("N0") + "đ")</b></span>
+    <span>Tổng cộng: <b>@(tong.ToString("N0") + "đ")</b></span>
+</div>

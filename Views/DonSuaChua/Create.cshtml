@@ -1,0 +1,52 @@
+@model KhoLinhKien.Models.DonSuaChua
+@{ ViewData["Title"] = "Tạo đơn sửa chữa"; }
+
+<a class="back-link" asp-action="Index"><i class="bi bi-arrow-left"></i> Quay lại danh sách đơn</a>
+
+<div class="form-card">
+    <div class="form-card-head">
+        <span class="fc-icon"><i class="bi bi-wrench-adjustable"></i></span>
+        <div><h4>Tạo đơn sửa chữa</h4><small>Ghi nhận máy khách mang đến. Đơn mới có trạng thái Nhận máy.</small></div>
+    </div>
+
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="form-alert"></div>
+
+        <div class="form-body">
+            <div class="field">
+                <label asp-for="TenKhach">Tên khách hàng <span class="req">*</span></label>
+                <input asp-for="TenKhach" class="form-ctl" placeholder="VD: Nguyễn Văn A" />
+                <span asp-validation-for="TenKhach" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="SoDienThoai">Số điện thoại <span class="req">*</span></label>
+                <input asp-for="SoDienThoai" class="form-ctl" placeholder="VD: 0901234567" />
+                <span asp-validation-for="SoDienThoai" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="TenMay">Máy cần sửa <span class="req">*</span></label>
+                <input asp-for="TenMay" class="form-ctl" placeholder="VD: iPhone 13" />
+                <span asp-validation-for="TenMay" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="NgayNhan">Ngày nhận</label>
+                <input asp-for="NgayNhan" type="date" class="form-ctl" value="@Model.NgayNhan.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="NgayNhan" class="field-error"></span>
+            </div>
+            <div class="field full">
+                <label asp-for="MoTaLoi">Mô tả lỗi <span class="req">*</span></label>
+                <textarea asp-for="MoTaLoi" class="form-ctl" rows="3" placeholder="VD: Vỡ màn hình, cảm ứng không ăn"></textarea>
+                <span asp-validation-for="MoTaLoi" class="field-error"></span>
+            </div>
+        </div>
+
+        <div class="form-foot">
+            <a class="btn-cancel" asp-action="Index">Hủy</a>
+            <button type="submit" class="btn-save"><i class="bi bi-check2-circle"></i> Tạo đơn</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

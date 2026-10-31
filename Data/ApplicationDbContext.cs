@@ -30,6 +30,9 @@ public class ApplicationDbContext : IdentityDbContext
 
         // Tiền lưu 18 chữ số, 2 số lẻ
         builder.Entity<LinhKien>().Property(x => x.DonGia).HasPrecision(18, 2);
-        builder.Entity<ChiTietPhieuNhap>().Property(x => x.DonGiaNhap).HasPrecision(18, 2);
+        builder.Entity<ChiTietPhieuNhap>().Property(x => x.DonGia).HasPrecision(18, 2);
+
+        builder.Entity<DonSuaChua>().Property(x => x.CongTho).HasPrecision(18, 2);
+        builder.Entity<ChiTietDonSuaChua>().Property(x => x.DonGia).HasPrecision(18, 2);
     }
 }

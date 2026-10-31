@@ -400,3 +400,9 @@ body { overflow-x: hidden; }
 .main-card { animation: none; transition: none; }
 .page-head, .toolbar, .form-card, .detail-card { animation: none; opacity: 1; }
 .tbl tbody tr, .loc-card { animation: none; opacity: 1; }
+
+.total-bar { display: flex; justify-content: flex-end; gap: 2rem; flex-wrap: wrap; padding: .9rem 1.2rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; margin-top: 1rem; color: #1e3a8a; }
+.total-bar b { font-size: 1.15rem; }
+.lines .form-ctl { padding: .5rem .7rem; }
+.lines td { vertical-align: top; }
+.lines .ton-info { display: block; margin-top: .25rem; }

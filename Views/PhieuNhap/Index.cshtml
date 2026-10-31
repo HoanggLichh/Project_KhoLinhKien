@@ -1,0 +1,56 @@
+@model IEnumerable<KhoLinhKien.Models.PhieuNhap>
+@{
+    ViewData["Title"] = "Phiếu nhập kho";
+    var i = 0;
+}
+
+<div class="page-head">
+    <div>
+        <h1>Phiếu nhập kho</h1>
+        <p>Lịch sử nhập hàng. Mỗi phiếu nhập làm tồn kho tăng tương ứng.</p>
+    </div>
+    <a class="btn-add" asp-action="Create"><i class="bi bi-plus-lg"></i> Lập phiếu nhập</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state"><i class="bi bi-box-arrow-in-down"></i><b>Chưa có phiếu nhập nào</b><span>Bấm Lập phiếu nhập để nhập hàng vào kho.</span></div>
+}
+else
+{
+    <div class="toolbar">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" data-live-filter placeholder="Lọc nhanh theo mã phiếu, nhà cung cấp, người lập..." />
+        </div>
+    </div>
+    <div class="result-count"><b>@Model.Count()</b> phiếu nhập</div>
+    <div class="tbl-wrap">
+        <table class="tbl">
+            <thead>
+                <tr><th>Mã phiếu</th><th>Ngày nhập</th><th>Nhà cung cấp</th><th>Số dòng</th><th>Tổng tiền</th><th>Người lập</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var x in Model)
+                {
+                    <tr data-filter-item style="--i:@Math.Min(i++, 14)">
+                        <td><span class="code-chip">PN-@x.Id.ToString("D4")</span></td>
+                        <td>@x.NgayNhap.ToString("dd/MM/yyyy")</td>
+                        <td><b>@x.NhaCungCap?.TenNhaCungCap</b></td>
+                        <td><span class="tag">@x.ChiTiets.Count dòng</span></td>
+                        <td class="num">@(x.ChiTiets.Sum(c => c.SoLuong * c.DonGia).ToString("N0") + "đ")</td>
+                        <td class="cell-title"><small>@x.NguoiLap</small></td>
+                        <td>
+                            <div class="actions">
+                                <a class="icon-btn view" asp-action="Details" asp-route-id="@x.Id" title="Xem chi tiết"><i class="bi bi-eye"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div id="filterEmpty" class="empty-state" style="display:none"><i class="bi bi-search"></i><b>Không có kết quả phù hợp</b></div>
+    </div>
+}
+
+<partial name="_PageTools" />

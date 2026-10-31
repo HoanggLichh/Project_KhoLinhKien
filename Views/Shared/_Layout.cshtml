@@ -20,19 +20,19 @@
     <aside class="sidebar" id="sidebar">
         <a class="brand" asp-controller="Home" asp-action="Index"><i class="bi bi-cpu-fill"></i> L-INVENTORY</a>
 
-        <nav class="side-nav">
+                <nav class="side-nav">
             <a class="side-link" asp-controller="Home" asp-action="Index"><i class="bi bi-pie-chart-fill"></i> Tổng quan</a>
+            <a class="side-link" asp-controller="LinhKien" asp-action="Index"><i class="bi bi-motherboard"></i> Quản lý linh kiện</a>
+            <a class="side-link" asp-controller="DonSuaChua" asp-action="Index"><i class="bi bi-wrench-adjustable"></i> Đơn sửa chữa</a>
 
             @if (quyenKho)
             {
-                <a class="side-link" asp-controller="LinhKien" asp-action="Index"><i class="bi bi-motherboard"></i> Quản lý linh kiện</a>
                 <a class="side-link" asp-controller="LoaiLinhKien" asp-action="Index"><i class="bi bi-tags-fill"></i> Loại linh kiện</a>
                 <a class="side-link" asp-controller="NhaCungCap" asp-action="Index"><i class="bi bi-truck"></i> Nhà cung cấp</a>
                 <a class="side-link" asp-controller="ViTriKho" asp-action="Index"><i class="bi bi-boxes"></i> Vị trí lưu kho</a>
-                <a class="side-link disabled" href="#"><i class="bi bi-box-arrow-in-down"></i> Phiếu nhập kho <span class="soon">Sắp có</span></a>
+                <a class="side-link" asp-controller="PhieuNhap" asp-action="Index"><i class="bi bi-box-arrow-in-down"></i> Phiếu nhập kho</a>
             }
 
-            <a class="side-link disabled" href="#"><i class="bi bi-tools"></i> Đơn sửa chữa <span class="soon">Sắp có</span></a>
             <a class="side-link" asp-controller="Home" asp-action="GioiThieu"><i class="bi bi-info-circle-fill"></i> Giới thiệu</a>
         </nav>
 
