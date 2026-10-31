@@ -35,6 +35,21 @@ public class DonSuaChuaController : Controller
             .Include(x => x.ChiTiets).ThenInclude(c => c.LinhKien)
             .FirstOrDefaultAsync(x => x.Id == id);
         if (don == null) return NotFound();
+
+        if (don.TrangThai != TrangThaiDon.HoanTat)
+        {
+            ViewData["LinhKiens"] = await _context.LinhKien
+                .AsNoTracking()
+                .OrderBy(x => x.MaLinhKien)
+                .Select(x => new LinhKienChonVM
+                {
+                    Id = x.Id,
+                    Ten = x.MaLinhKien + " - " + x.TenLinhKien,
+                    DonGia = x.DonGia,
+                    Ton = x.SoLuongTon
+                })
+                .ToListAsync();
+        }
         return View(don);
     }
 
@@ -50,7 +65,6 @@ public class DonSuaChuaController : Controller
     public async Task<IActionResult> Create(
         [Bind("TenKhach,SoDienThoai,TenMay,MoTaLoi,NgayNhan")] DonSuaChua don)
     {
-        // Các trường hệ thống tự gán, không nhận từ form
         don.TrangThai = TrangThaiDon.NhanMay;
         don.CongTho = 0;
         don.NguoiLap = User.Identity?.Name;
@@ -64,5 +78,144 @@ public class DonSuaChuaController : Controller
 
         TempData["ThongBao"] = $"Đã tạo đơn sửa chữa WO-{don.Id:D3}.";
         return RedirectToAction(nameof(Details), new { id = don.Id });
+    }
+
+    // ===== PHẦN B: xuất linh kiện cho đơn =====
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ThemLinhKien(int id, int linhKienId, int soLuong)
+    {
+        var don = await _context.DonSuaChua.FirstOrDefaultAsync(x => x.Id == id);
+        if (don == null) return NotFound();
+
+        if (don.TrangThai == TrangThaiDon.HoanTat)
+        {
+            TempData["Loi"] = "Đơn đã hoàn tất, không thể xuất thêm linh kiện.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        if (linhKienId <= 0)
+        {
+            TempData["Loi"] = "Vui lòng chọn linh kiện.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        if (soLuong <= 0)
+        {
+            TempData["Loi"] = "Số lượng xuất phải lớn hơn 0.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var lk = await _context.LinhKien.AsNoTracking().FirstOrDefaultAsync(x => x.Id == linhKienId);
+        if (lk == null)
+        {
+            TempData["Loi"] = "Linh kiện không tồn tại.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        if (soLuong > lk.SoLuongTon)
+        {
+            TempData["Loi"] = $"Không đủ tồn kho: {lk.TenLinhKien} chỉ còn {lk.SoLuongTon}, không thể xuất {soLuong}.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        using var tran = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            // Trừ tồn có điều kiện ngay trong database: chỉ trừ khi còn đủ hàng
+            var daTru = await _context.LinhKien
+                .Where(x => x.Id == linhKienId && x.SoLuongTon >= soLuong)
+                .ExecuteUpdateAsync(s => s.SetProperty(x => x.SoLuongTon, x => x.SoLuongTon - soLuong));
+
+            if (daTru == 0)
+            {
+                await tran.RollbackAsync();
+                TempData["Loi"] = $"Không đủ tồn kho cho {lk.TenLinhKien}. Vui lòng kiểm tra lại số lượng.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            var dong = await _context.ChiTietDonSuaChua
+                .FirstOrDefaultAsync(x => x.DonSuaChuaId == id && x.LinhKienId == linhKienId);
+
+            if (dong == null)
+            {
+                _context.ChiTietDonSuaChua.Add(new ChiTietDonSuaChua
+                {
+                    DonSuaChuaId = id,
+                    LinhKienId = linhKienId,
+                    SoLuong = soLuong,
+                    DonGia = lk.DonGia
+                });
+            }
+            else
+            {
+                dong.SoLuong += soLuong;   // Cùng linh kiện thì cộng dồn vào 1 dòng
+            }
+
+            await _context.SaveChangesAsync();
+            await tran.CommitAsync();
+        }
+        catch
+        {
+            await tran.RollbackAsync();
+            TempData["Loi"] = "Có lỗi khi xuất linh kiện, chưa có thay đổi nào được ghi. Vui lòng thử lại.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var conLai = lk.SoLuongTon - soLuong;
+        TempData["ThongBao"] = $"Đã xuất {soLuong} x {lk.TenLinhKien} cho đơn WO-{id:D3}. Tồn còn {conLai}.";
+
+        if (conLai <= lk.TonToiThieu)
+            TempData["Loi"] = $"Cảnh báo: {lk.TenLinhKien} còn {conLai}, đã chạm hoặc dưới mức tối thiểu ({lk.TonToiThieu}). Cần nhập thêm.";
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> XoaDong(int id, int chiTietId)
+    {
+        var don = await _context.DonSuaChua.FirstOrDefaultAsync(x => x.Id == id);
+        if (don == null) return NotFound();
+
+        if (don.TrangThai == TrangThaiDon.HoanTat)
+        {
+            TempData["Loi"] = "Đơn đã hoàn tất, không thể thay đổi linh kiện.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        var dong = await _context.ChiTietDonSuaChua
+            .FirstOrDefaultAsync(x => x.Id == chiTietId && x.DonSuaChuaId == id);
+        if (dong == null)
+        {
+            TempData["Loi"] = "Không tìm thấy dòng linh kiện.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        using var tran = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var linhKienId = dong.LinhKienId;
+            var soLuong = dong.SoLuong;
+
+            // Hoàn trả tồn kho
+            await _context.LinhKien
+                .Where(x => x.Id == linhKienId)
+                .ExecuteUpdateAsync(s => s.SetProperty(x => x.SoLuongTon, x => x.SoLuongTon + soLuong));
+
+            _context.ChiTietDonSuaChua.Remove(dong);
+            await _context.SaveChangesAsync();
+            await tran.CommitAsync();
+
+            TempData["ThongBao"] = $"Đã bỏ dòng linh kiện khỏi đơn và hoàn lại {soLuong} vào kho.";
+        }
+        catch
+        {
+            await tran.RollbackAsync();
+            TempData["Loi"] = "Có lỗi khi bỏ dòng linh kiện, chưa có thay đổi nào được ghi.";
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
     }
 }

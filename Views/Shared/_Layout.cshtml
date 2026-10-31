@@ -1,7 +1,9 @@
 ﻿@{
     var daDangNhap = User.Identity!.IsAuthenticated;
     var quyenKho = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
-    var vaiTro = User.IsInRole("QuanLy") ? "Quản lý" : User.IsInRole("ThuKho") ? "Thủ kho" : User.IsInRole("KyThuatVien") ? "Kỹ thuật viên" : "";
+    var vaiTro = User.IsInRole("QuanLy") ? "Quản lý"
+               : User.IsInRole("ThuKho") ? "Thủ kho"
+               : User.IsInRole("KyThuatVien") ? "Kỹ thuật viên" : "";
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -9,7 +11,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - L-Inventory</title>
+
+    <!-- Áp theme ngay từ đầu để không bị nháy màu khi tải trang -->
+    <script>
+        (function () {
+            var t = 'dark';
+            try { t = localStorage.getItem('theme') || 'dark'; } catch (e) { }
+            document.documentElement.setAttribute('data-theme', t);
+            document.documentElement.setAttribute('data-bs-theme', t);
+        })();
+    </script>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Nunito:wght@600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
@@ -18,9 +34,27 @@
 @if (daDangNhap)
 {
     <aside class="sidebar" id="sidebar">
-        <a class="brand" asp-controller="Home" asp-action="Index"><i class="bi bi-cpu-fill"></i> L-INVENTORY</a>
+        <a class="brand" asp-controller="Home" asp-action="Index" aria-label="L-Inventory">
+            <svg class="logo-mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="lgV" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                        <stop offset="0" stop-color="#5eead4" />
+                        <stop offset="1" stop-color="#0f9b88" />
+                    </linearGradient>
+                </defs>
+                <path class="pins" d="M17 4v6M24 4v6M31 4v6M17 38v6M24 38v6M31 38v6M4 17h6M4 24h6M4 31h6M38 17h6M38 24h6M38 31h6"
+                      stroke="url(#lgV)" stroke-width="2.4" stroke-linecap="round" />
+                <rect x="10" y="10" width="28" height="28" rx="7" fill="#0b1f1c" stroke="url(#lgV)" stroke-width="2.4" />
+                <path d="M19 17v14h10" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
+                <circle class="led" cx="30" cy="19" r="2.8" fill="#f43f5e" />
+            </svg>
+            <span class="brand-text">
+                <span class="brand-name"><em>L</em>-INVENTORY</span>
+                <small>Kho linh kiện</small>
+            </span>
+        </a>
 
-                <nav class="side-nav">
+        <nav class="side-nav">
             <a class="side-link" asp-controller="Home" asp-action="Index"><i class="bi bi-pie-chart-fill"></i> Tổng quan</a>
             <a class="side-link" asp-controller="LinhKien" asp-action="Index"><i class="bi bi-motherboard"></i> Quản lý linh kiện</a>
             <a class="side-link" asp-controller="DonSuaChua" asp-action="Index"><i class="bi bi-wrench-adjustable"></i> Đơn sửa chữa</a>
@@ -44,9 +78,57 @@
     <div class="content">
         <header class="topbar">
             <button type="button" class="toggle-btn" id="sidebarToggle" aria-label="Mở menu"><i class="bi bi-list"></i></button>
-            <div class="topbar-title">Hệ thống quản lý nội bộ</div>
+
+            <div class="topbar-slogan">
+                <span class="slogan-main">Đúng linh kiện. <em>Đúng chỗ.</em> Đúng hẹn.</span>
+                <small>Kho linh kiện &amp; sửa chữa thông minh</small>
+            </div>
+
             <div class="topbar-right">
-                <i class="bi bi-bell-fill bell"></i>
+                <!-- Nút chuyển sáng / tối (nằm ngay cạnh chuông) -->
+                <button type="button" class="notif-btn" id="theme-toggle" aria-label="Chuyển chế độ sáng/tối">
+                    <i class="bi bi-moon-stars-fill bell" id="theme-icon"></i>
+                </button>
+
+                <div class="notif" id="notif">
+                    <button type="button" class="notif-btn" id="notifBtn" aria-label="Thông báo" aria-expanded="false">
+                        <i class="bi bi-bell-fill bell"></i>
+                        <span class="notif-badge" id="notifBadge">4</span>
+                    </button>
+
+                    <div class="notif-panel" id="notifPanel" role="dialog" aria-label="Thông báo">
+                        <div class="notif-head">
+                            <b>Thông báo</b>
+                            <button type="button" class="notif-readall" id="notifReadAll">Đánh dấu đã đọc</button>
+                        </div>
+
+                        <div class="notif-list">
+                            <a class="notif-item unread red" asp-controller="PhieuNhap" asp-action="Create">
+                                <span class="notif-ico"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                                <span class="notif-txt"><b>Màn hình iPhone 13 sắp hết</b><small>Còn 2/10 · Kệ A1 - Tầng 2</small></span>
+                                <span class="notif-time">5 phút</span>
+                            </a>
+                            <a class="notif-item unread red" asp-controller="PhieuNhap" asp-action="Create">
+                                <span class="notif-ico"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                                <span class="notif-txt"><b>Pin Samsung S22 sắp hết</b><small>Còn 1/5 · Kệ B3 - Tầng 1</small></span>
+                                <span class="notif-time">12 phút</span>
+                            </a>
+                            <a class="notif-item unread amber" asp-controller="DonSuaChua" asp-action="Index">
+                                <span class="notif-ico"><i class="bi bi-hourglass-split"></i></span>
+                                <span class="notif-txt"><b>#WO-003 đang chờ linh kiện</b><small>Xiaomi Note 8 · Lê Văn C</small></span>
+                                <span class="notif-time">1 giờ</span>
+                            </a>
+                            <a class="notif-item unread teal" asp-controller="DonSuaChua" asp-action="Index">
+                                <span class="notif-ico"><i class="bi bi-check-circle-fill"></i></span>
+                                <span class="notif-txt"><b>#WO-001 đã hoàn thành</b><small>iPhone 13 · Nguyễn Văn A · 450,000đ</small></span>
+                                <span class="notif-time">2 giờ</span>
+                            </a>
+                        </div>
+
+                        <a class="notif-foot" asp-controller="DonSuaChua" asp-action="Index">Xem tất cả đơn sửa chữa <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+
                 <div class="user">
                     <i class="bi bi-person-circle"></i>
                     <div class="user-text">
@@ -71,7 +153,7 @@ else
     </main>
 }
 
-    @if (TempData["ThongBao"] is string tbOk || TempData["Loi"] is string tbErr)
+    @if (TempData["ThongBao"] != null || TempData["Loi"] != null)
     {
         <div class="toast-stack">
             @if (TempData["ThongBao"] is string okMsg)
@@ -88,7 +170,9 @@ else
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-            <script>
+
+    <!-- Sidebar, menu active, chuông thông báo -->
+    <script>
         (function () {
             // Nút mở sidebar trên màn hình nhỏ
             var btn = document.getElementById('sidebarToggle');
@@ -104,7 +188,7 @@ else
                          || (href !== '/' && href !== '#' && (path === href || path.indexOf(href + '/') === 0));
                 if (match) a.classList.add('active');
 
-                // Hiệu ứng gợn sóng khi nhấp (không chặn việc chuyển trang)
+                // Hiệu ứng gợn sóng khi nhấp
                 a.addEventListener('mousedown', function (e) {
                     if (a.classList.contains('disabled')) return;
                     var r = a.getBoundingClientRect();
@@ -116,8 +200,124 @@ else
                     setTimeout(function () { s.remove(); }, 600);
                 });
             });
+
+            // Chuông thông báo
+            var nBtn = document.getElementById('notifBtn'),
+                nPanel = document.getElementById('notifPanel'),
+                nBadge = document.getElementById('notifBadge'),
+                nAll = document.getElementById('notifReadAll');
+            if (nBtn && nPanel) {
+                var nCount = function () {
+                    var n = nPanel.querySelectorAll('.notif-item.unread').length;
+                    nBadge.textContent = n;
+                    nBadge.style.display = n > 0 ? '' : 'none';
+                };
+                var nClose = function () {
+                    nPanel.classList.remove('open');
+                    nBtn.setAttribute('aria-expanded', 'false');
+                };
+                nBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var open = nPanel.classList.toggle('open');
+                    nBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                });
+                nPanel.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var it = e.target.closest('.notif-item');
+                    if (it) { it.classList.remove('unread'); nCount(); }
+                });
+                nAll.addEventListener('click', function () {
+                    nPanel.querySelectorAll('.notif-item.unread').forEach(function (i) { i.classList.remove('unread'); });
+                    nCount();
+                });
+                document.addEventListener('click', nClose);
+                document.addEventListener('keydown', function (e) { if (e.key === 'Escape') nClose(); });
+                nCount();
+            }
         })();
     </script>
+
+    <!-- Chuyển sáng / tối: nhún một nhịp rồi tỏa ra hết trang -->
+    <script>
+        (function () {
+            // ===== Chọn hình: 'heart' | 'star' | 'diamond' | 'square' | 'hexagon' | 'circle' =====
+            var SHAPE = 'circle';
+
+            function applyTheme(t) {
+                var root = document.documentElement;
+                root.setAttribute('data-theme', t);
+                root.setAttribute('data-bs-theme', t);
+                var icon = document.getElementById('theme-icon');
+                if (icon) icon.className = 'bi ' + (t === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill') + ' bell';
+                try { localStorage.setItem('theme', t); } catch (e) { }
+            }
+
+            // Luôn trả về đúng 72 điểm để các khung hình nội suy mượt
+            function poly(name, cx, cy, s) {
+                var N = 72, pts = [];
+                for (var i = 0; i < N; i++) {
+                    var a = i / N * Math.PI * 2, px, py, r;
+                    if (name === 'heart') {
+                        var hx = 16 * Math.pow(Math.sin(a), 3);
+                        var hy = -(13 * Math.cos(a) - 5 * Math.cos(2 * a) - 2 * Math.cos(3 * a) - Math.cos(4 * a));
+                        px = cx + hx / 17 * s;
+                        py = cy + (hy - 2.5) / 17 * s;
+                    } else {
+                        if (name === 'diamond') r = 1 / (Math.abs(Math.cos(a)) + Math.abs(Math.sin(a)));
+                        else if (name === 'square') r = 1 / Math.max(Math.abs(Math.cos(a)), Math.abs(Math.sin(a)));
+                        else if (name === 'hexagon') r = Math.cos(Math.PI / 6) / Math.cos((a % (Math.PI / 3)) - Math.PI / 6);
+                        else if (name === 'star') {
+                            var seg = Math.PI * 2 / 5;
+                            var u = ((a + Math.PI / 2) % seg) / seg;
+                            r = 0.45 + 0.55 * Math.abs(u - 0.5) * 2;
+                        } else r = 1;
+                        px = cx + Math.cos(a) * r * s;
+                        py = cy + Math.sin(a) * r * s;
+                    }
+                    pts.push(px.toFixed(1) + 'px ' + py.toFixed(1) + 'px');
+                }
+                return 'polygon(' + pts.join(',') + ')';
+            }
+
+            // Đồng bộ icon theo theme hiện tại khi tải trang
+            applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+
+            // Bắt ở pha capture: chạy trước mọi listener cũ (kể cả trong site.js), rồi chặn chúng lại
+            document.addEventListener('click', function (e) {
+                var btn = e.target.closest('#theme-toggle');
+                if (!btn) return;
+                e.stopImmediatePropagation();
+                e.preventDefault();
+
+                var cur = document.documentElement.getAttribute('data-theme');
+                var next = cur === 'dark' ? 'light' : 'dark';
+
+                var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (!document.startViewTransition || reduce) { applyTheme(next); return; }
+
+                var r = btn.getBoundingClientRect();
+                var x = r.left + r.width / 2, y = r.top + r.height / 2;
+                var radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+
+                var t = document.startViewTransition(function () { applyTheme(next); });
+
+                t.ready.then(function () {
+                    var big = radius * ((SHAPE === 'star' || SHAPE === 'heart') ? 2.4 : 1.5);
+                    document.documentElement.animate(
+                        [
+                            { clipPath: poly(SHAPE, x, y, 0),   offset: 0,   easing: 'cubic-bezier(.3, 1.5, .5, 1)' },
+                            { clipPath: poly(SHAPE, x, y, 70),  offset: .22, easing: 'ease-in-out' },
+                            { clipPath: poly(SHAPE, x, y, 32),  offset: .38, easing: 'cubic-bezier(.65, 0, .15, 1)' },
+                            { clipPath: poly(SHAPE, x, y, big), offset: 1 }
+                        ],
+                        { duration: 1300, pseudoElement: '::view-transition-new(root)' }
+                    );
+                }).catch(function (err) { console.log('[theme] loi:', err); });
+
+            }, true);
+        })();
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

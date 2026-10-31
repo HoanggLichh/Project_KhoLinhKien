@@ -2,141 +2,189 @@
 
 @if (!User.Identity!.IsAuthenticated)
 {
-    <div class="text-center text-white anim" style="max-width:520px">
-        <h1 class="fw-bold mb-2"><i class="bi bi-cpu-fill"></i> L-INVENTORY</h1>
-        <p class="mb-4" style="color:#cbd5e1">Hệ thống quản lý kho linh kiện điện tử cho cửa hàng sửa chữa điện thoại</p>
-        <a class="btn btn-accent btn-lg px-5" asp-controller="Account" asp-action="Login">ĐĂNG NHẬP</a>
-    </div>
+    <div class="aurora" aria-hidden="true"><span></span><span></span></div>
+
+    <section class="landing anim">
+        <div class="landing-card">
+            <svg class="landing-logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="lgV2" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                        <stop offset="0" stop-color="#5eead4" />
+                        <stop offset="1" stop-color="#0f9b88" />
+                    </linearGradient>
+                </defs>
+                <path class="pins" d="M17 4v6M24 4v6M31 4v6M17 38v6M24 38v6M31 38v6M4 17h6M4 24h6M4 31h6M38 17h6M38 24h6M38 31h6"
+                      stroke="url(#lgV2)" stroke-width="2.4" stroke-linecap="round" />
+                <rect x="10" y="10" width="28" height="28" rx="7" fill="#0b1f1c" stroke="url(#lgV2)" stroke-width="2.4" />
+                <path d="M19 17v14h10" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
+                <circle class="led" cx="30" cy="19" r="2.8" fill="#f43f5e" />
+            </svg>
+
+            <h1 class="landing-title"><em>L</em>-INVENTORY</h1>
+            <p class="landing-sub">Hệ thống quản lý kho linh kiện điện tử<br />cho cửa hàng sửa chữa điện thoại</p>
+
+            <a class="btn-login" asp-controller="Account" asp-action="Login">
+                Đăng nhập <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+        <small class="landing-foot">Hệ thống nội bộ · Chỉ dành cho nhân viên cửa hàng</small>
+    </section>
 }
 else
 {
-    <div class="dash-head anim">
-        <h1>Dashboard Tổng Quan</h1>
+    <div class="aurora" aria-hidden="true"><span></span><span></span></div>
+
+    <div class="hx-ticker anim" aria-hidden="true">
+        <div class="hx-ticker-track">
+            <span class="ok">● HỆ THỐNG TRỰC TUYẾN</span>
+            <span>TỒN KHO ỔN ĐỊNH 99%</span>
+            <span class="warn">12 LINH KIỆN CẦN NHẬP</span>
+            <span>48 ĐƠN ĐÃ HOÀN THÀNH</span>
+            <span>DOANH THU THÁNG 15.4M</span>
+            <span class="ok">● HỆ THỐNG TRỰC TUYẾN</span>
+            <span>TỒN KHO ỔN ĐỊNH 99%</span>
+            <span class="warn">12 LINH KIỆN CẦN NHẬP</span>
+            <span>48 ĐƠN ĐÃ HOÀN THÀNH</span>
+            <span>DOANH THU THÁNG 15.4M</span>
+        </div>
+    </div>
+
+    <div class="dash-head hx-head anim">
+        <div>
+            <div class="hx-eyebrow"><span class="hx-live"></span> TRỰC TUYẾN · <b id="hxClock">--:--:--</b></div>
+            <h1>Dashboard <em>Tổng Quan</em></h1>
+        </div>
         <span class="dash-date">Hôm nay: @DateTime.Now.ToString("dd/MM/yyyy")</span>
     </div>
 
-    <div class="row g-3 mb-4">
+    <!-- ===== 4 thẻ thống kê ===== -->
+    <div class="row g-3 mb-3">
         <div class="col-md-6 col-xl-3 anim" style="--d:.1s">
-            <div class="stat-card c-blue">
-                <div><div class="stat-label">Tổng linh kiện</div><div class="stat-value" data-count="1245">0</div></div>
-                <div class="stat-icon"><i class="bi bi-boxes"></i></div>
+            <div class="hx-card c-blue">
+                <div class="hx-card-top">
+                    <div><div class="hx-label">Tổng linh kiện</div><div class="hx-value" data-count="1245">0</div></div>
+                    <div class="hx-icon"><i class="bi bi-boxes"></i></div>
+                </div>
+                <svg class="hx-spark" viewBox="0 0 120 36" preserveAspectRatio="none"><path pathLength="1" d="M0 28 L15 22 L30 25 L45 14 L60 18 L75 8 L90 12 L105 4 L120 6"/></svg>
             </div>
         </div>
         <div class="col-md-6 col-xl-3 anim" style="--d:.2s">
-            <div class="stat-card c-red">
-                <div><div class="stat-label">Sắp hết hàng</div><div class="stat-value" data-count="12">0</div></div>
-                <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div class="hx-card c-red">
+                <div class="hx-card-top">
+                    <div><div class="hx-label">Sắp hết hàng</div><div class="hx-value" data-count="12">0</div></div>
+                    <div class="hx-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                </div>
+                <svg class="hx-spark" viewBox="0 0 120 36" preserveAspectRatio="none"><path pathLength="1" d="M0 6 L15 10 L30 8 L45 16 L60 14 L75 22 L90 20 L105 28 L120 26"/></svg>
             </div>
         </div>
         <div class="col-md-6 col-xl-3 anim" style="--d:.3s">
-            <div class="stat-card c-green">
-                <div><div class="stat-label">Đơn hoàn thành</div><div class="stat-value" data-count="48">0</div></div>
-                <div class="stat-icon"><i class="bi bi-clipboard-check-fill"></i></div>
+            <div class="hx-card c-green">
+                <div class="hx-card-top">
+                    <div><div class="hx-label">Đơn hoàn thành</div><div class="hx-value" data-count="48">0</div></div>
+                    <div class="hx-icon"><i class="bi bi-clipboard-check-fill"></i></div>
+                </div>
+                <svg class="hx-spark" viewBox="0 0 120 36" preserveAspectRatio="none"><path pathLength="1" d="M0 30 L15 26 L30 28 L45 20 L60 22 L75 14 L90 16 L105 8 L120 10"/></svg>
             </div>
         </div>
         <div class="col-md-6 col-xl-3 anim" style="--d:.4s">
-            <div class="stat-card c-cyan">
-                <div><div class="stat-label">Doanh thu tháng</div><div class="stat-value" data-count="15.4" data-dec="1" data-suffix="M">0</div></div>
-                <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
+            <div class="hx-card c-cyan">
+                <div class="hx-card-top">
+                    <div><div class="hx-label">Doanh thu tháng</div><div class="hx-value" data-count="15.4" data-dec="1" data-suffix="M">0</div></div>
+                    <div class="hx-icon"><i class="bi bi-wallet2"></i></div>
+                </div>
+                <svg class="hx-spark" viewBox="0 0 120 36" preserveAspectRatio="none"><path pathLength="1" d="M0 26 L15 24 L30 18 L45 20 L60 12 L75 14 L90 6 L105 9 L120 3"/></svg>
             </div>
         </div>
     </div>
 
+    <!-- ===== Biểu đồ doanh thu ===== -->
+    <div class="row g-3 mb-3">
+        <div class="col-12 anim" style="--d:.5s">
+            <div class="hx-panel">
+                <div class="hx-panel-head">
+                    <div class="hx-title"><span class="hx-tag blue"><i class="bi bi-activity"></i></span>
+                        <div><h6>Doanh thu 7 ngày gần nhất</h6><small>Đơn vị: triệu đồng</small></div>
+                    </div>
+                    <span class="hx-badge">+12.4% so với tuần trước</span>
+                </div>
+                <div class="hx-bars">
+                    <div class="hx-bar" style="--h:48%;--i:0" data-v="1.8"><span></span><em>T2</em></div>
+                    <div class="hx-bar" style="--h:62%;--i:1" data-v="2.3"><span></span><em>T3</em></div>
+                    <div class="hx-bar" style="--h:40%;--i:2" data-v="1.5"><span></span><em>T4</em></div>
+                    <div class="hx-bar" style="--h:78%;--i:3" data-v="2.9"><span></span><em>T5</em></div>
+                    <div class="hx-bar" style="--h:66%;--i:4" data-v="2.4"><span></span><em>T6</em></div>
+                    <div class="hx-bar peak" style="--h:94%;--i:5" data-v="3.5"><span></span><em>T7</em></div>
+                    <div class="hx-bar" style="--h:55%;--i:6" data-v="2.0"><span></span><em>CN</em></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Đơn sửa chữa + cảnh báo tồn kho ===== -->
     <div class="row g-3">
-        <div class="col-xl-8 anim anim-left" style="--d:.5s">
-            <div class="panel2">
-                <div class="panel2-head">
-                    <div class="panel2-title">
-                        <span class="title-icon blue"><i class="bi bi-wrench-adjustable"></i></span>
-                        <div>
-                            <h6>Đơn sửa chữa gần đây</h6>
-                            <small>3 đơn mới nhất</small>
-                        </div>
+        <div class="col-xl-8 anim anim-left" style="--d:.6s">
+            <div class="hx-panel">
+                <div class="hx-panel-head">
+                    <div class="hx-title"><span class="hx-tag blue"><i class="bi bi-wrench-adjustable"></i></span>
+                        <div><h6>Đơn sửa chữa gần đây</h6><small>3 đơn mới nhất</small></div>
                     </div>
                     <a class="link-more" asp-controller="DonSuaChua" asp-action="Index">Xem tất cả <i class="bi bi-arrow-right"></i></a>
                 </div>
 
-                <div class="order-list">
-                    <div class="order-row" style="--i:0">
+                <div class="hx-orders">
+                    <div class="hx-row" style="--i:0">
                         <div class="avatar a1">A</div>
-                        <div class="order-info">
-                            <b>Nguyễn Văn A</b>
-                            <small>iPhone 13 · Thay màn hình</small>
-                        </div>
+                        <div class="order-info"><b>Nguyễn Văn A</b><small>iPhone 13 · Thay màn hình</small></div>
+                        <div class="hx-steps s3"><i></i><i></i><i></i></div>
                         <span class="pill done"><i></i>Hoàn thành</span>
-                        <div class="order-money">
-                            <b>450,000đ</b>
-                            <small>#WO-001</small>
-                        </div>
+                        <div class="order-money"><b>450,000đ</b><small>#WO-001</small></div>
                     </div>
-
-                    <div class="order-row" style="--i:1">
+                    <div class="hx-row" style="--i:1">
                         <div class="avatar a2">B</div>
-                        <div class="order-info">
-                            <b>Trần Thị B</b>
-                            <small>Samsung S22 · Thay pin</small>
-                        </div>
+                        <div class="order-info"><b>Trần Thị B</b><small>Samsung S22 · Thay pin</small></div>
+                        <div class="hx-steps s2"><i></i><i></i><i></i></div>
                         <span class="pill doing"><i></i>Đang xử lý</span>
-                        <div class="order-money">
-                            <b>1,200,000đ</b>
-                            <small>#WO-002</small>
-                        </div>
+                        <div class="order-money"><b>1,200,000đ</b><small>#WO-002</small></div>
                     </div>
-
-                    <div class="order-row" style="--i:2">
+                    <div class="hx-row" style="--i:2">
                         <div class="avatar a3">C</div>
-                        <div class="order-info">
-                            <b>Lê Văn C</b>
-                            <small>Xiaomi Note 8 · Thay cụm đuôi sạc</small>
-                        </div>
+                        <div class="order-info"><b>Lê Văn C</b><small>Xiaomi Note 8 · Thay cụm đuôi sạc</small></div>
+                        <div class="hx-steps s1"><i></i><i></i><i></i></div>
                         <span class="pill wait"><i></i>Chờ linh kiện</span>
-                        <div class="order-money">
-                            <b class="muted">Chưa báo giá</b>
-                            <small>#WO-003</small>
-                        </div>
+                        <div class="order-money"><b class="muted">Chưa báo giá</b><small>#WO-003</small></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-4 anim anim-right" style="--d:.6s">
-            <div class="panel2">
-                <div class="panel2-head">
-                    <div class="panel2-title">
-                        <span class="title-icon red"><i class="bi bi-exclamation-triangle-fill"></i></span>
-                        <div>
-                            <h6>Cảnh báo tồn kho</h6>
-                            <small>Cần nhập thêm</small>
-                        </div>
+        <div class="col-xl-4 anim anim-right" style="--d:.7s">
+            <div class="hx-panel">
+                <div class="hx-panel-head">
+                    <div class="hx-title"><span class="hx-tag red"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                        <div><h6>Cảnh báo tồn kho</h6><small>Cần nhập thêm</small></div>
                     </div>
                     <span class="count-pill">2</span>
                 </div>
 
-                <div class="stock-list">
-                    <div class="stock-item crit" style="--i:0">
+                <div class="hx-alerts">
+                    <div class="hx-alert" style="--i:0">
                         <div class="stock-top">
-                            <div class="stock-name">
-                                <b>Màn hình iPhone 13</b>
-                                <small><i class="bi bi-geo-alt-fill"></i> Kệ A1 - Tầng 2</small>
-                            </div>
+                            <div class="stock-name"><b>Màn hình iPhone 13</b><small><i class="bi bi-geo-alt-fill"></i> Kệ A1 - Tầng 2</small></div>
                             <div class="stock-qty"><b>2</b><span>/ 10</span></div>
                         </div>
-                        <div class="bar"><div class="bar-fill" style="width:20%"></div></div>
+                        <div class="hx-seg">@for (int s = 0; s < 10; s++) { <i class="@(s < 2 ? "on" : "")"></i> }</div>
                         <div class="stock-foot">
                             <span>Rất thấp, nhập gấp</span>
                             <a asp-controller="PhieuNhap" asp-action="Create" class="btn-restock">Nhập thêm</a>
                         </div>
                     </div>
 
-                    <div class="stock-item crit" style="--i:1">
+                    <div class="hx-alert" style="--i:1">
                         <div class="stock-top">
-                            <div class="stock-name">
-                                <b>Pin Samsung S22</b>
-                                <small><i class="bi bi-geo-alt-fill"></i> Kệ B3 - Tầng 1</small>
-                            </div>
+                            <div class="stock-name"><b>Pin Samsung S22</b><small><i class="bi bi-geo-alt-fill"></i> Kệ B3 - Tầng 1</small></div>
                             <div class="stock-qty"><b>1</b><span>/ 5</span></div>
                         </div>
-                        <div class="bar"><div class="bar-fill" style="width:20%"></div></div>
+                        <div class="hx-seg">@for (int s = 0; s < 10; s++) { <i class="@(s < 2 ? "on" : "")"></i> }</div>
                         <div class="stock-foot">
                             <span>Rất thấp, nhập gấp</span>
                             <a asp-controller="PhieuNhap" asp-action="Create" class="btn-restock">Nhập thêm</a>
@@ -152,6 +200,15 @@ else
     <script>
         (function () {
             var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // Đồng hồ trực tuyến
+            var clock = document.getElementById('hxClock');
+            if (clock) {
+                var tick = function () { clock.textContent = new Date().toLocaleTimeString('vi-VN', { hour12: false }); };
+                tick(); setInterval(tick, 1000);
+            }
+
+            // Đếm số từ 0 lên
             document.querySelectorAll('[data-count]').forEach(function (el) {
                 var end = parseFloat(el.dataset.count);
                 var dec = parseInt(el.dataset.dec || 0, 10);
@@ -160,7 +217,7 @@ else
                     el.textContent = v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suffix;
                 }
                 if (reduce) { show(end); return; }
-                var dur = 1400, start = null;
+                var dur = 1500, start = null;
                 setTimeout(function () {
                     requestAnimationFrame(function step(t) {
                         if (start === null) start = t;
@@ -168,8 +225,25 @@ else
                         show(end * (1 - Math.pow(1 - p, 3)));
                         if (p < 1) requestAnimationFrame(step);
                     });
-                }, 250);
+                }, 300);
             });
+
+            // Nghiêng 3D + vệt sáng theo chuột trên 4 thẻ thống kê
+            if (!reduce) {
+                document.querySelectorAll('.hx-card').forEach(function (card) {
+                    card.addEventListener('mousemove', function (e) {
+                        var r = card.getBoundingClientRect();
+                        var px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+                        card.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+                        card.style.setProperty('--my', (e.clientY - r.top) + 'px');
+                        card.style.setProperty('--rx', ((py - .5) * -9) + 'deg');
+                        card.style.setProperty('--ry', ((px - .5) * 11) + 'deg');
+                    });
+                    card.addEventListener('mouseleave', function () {
+                        ['--mx', '--my', '--rx', '--ry'].forEach(function (k) { card.style.removeProperty(k); });
+                    });
+                });
+            }
         })();
     </script>
 }

@@ -3,46 +3,78 @@
     ViewData["Title"] = "Đăng nhập";
 }
 
-<style>
-    .login-wrap { min-height: 60vh; display: flex; align-items: center; justify-content: center; }
-    .login-card { background: #fff; width: 100%; max-width: 440px; padding: 2.2rem 2.2rem 1.8rem; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.18); }
-    .login-card h2 { font-weight: 800; letter-spacing: 1px; font-size: 1.4rem; margin-bottom: 1.5rem; color: #111; }
-    .login-card label { font-weight: 600; font-size: .85rem; margin-bottom: .35rem; }
-    .login-card .form-control { border-radius: 0; padding: .6rem .75rem; }
-    .login-card .form-control:focus { border-color: var(--primary); box-shadow: none; }
-    .btn-login { background: var(--primary); color: #fff; font-weight: 700; letter-spacing: .5px; border-radius: 0; padding: .6rem 1.4rem; }
-    .btn-login:hover { background: var(--accent); color: var(--primary); }
-</style>
+<div class="aurora" aria-hidden="true"><span></span><span></span></div>
 
-<div class="login-wrap">
-    <div class="login-card">
-        <h2>ĐĂNG NHẬP</h2>
+<section class="auth-wrap">
+    <div class="auth-card">
+        <svg class="auth-logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+                <linearGradient id="lgV3" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                    <stop offset="0" stop-color="#5eead4" />
+                    <stop offset="1" stop-color="#0f9b88" />
+                </linearGradient>
+            </defs>
+            <path class="pins" d="M17 4v6M24 4v6M31 4v6M17 38v6M24 38v6M31 38v6M4 17h6M4 24h6M4 31h6M38 17h6M38 24h6M38 31h6"
+                  stroke="url(#lgV3)" stroke-width="2.4" stroke-linecap="round" />
+            <rect x="10" y="10" width="28" height="28" rx="7" fill="#0b1f1c" stroke="url(#lgV3)" stroke-width="2.4" />
+            <path d="M19 17v14h10" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
+            <circle class="led" cx="30" cy="19" r="2.8" fill="#f43f5e" />
+        </svg>
 
-        <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+        <h1 class="auth-title">Đăng nhập</h1>
+        <p class="auth-sub">Chào mừng trở lại <b>L-Inventory</b></p>
 
-            <div class="mb-3">
-                <label asp-for="TenDangNhap">Tên tài khoản hoặc địa chỉ email *</label>
-                <input asp-for="TenDangNhap" class="form-control" autofocus />
-                <span asp-validation-for="TenDangNhap" class="text-danger small"></span>
+        <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="auth-alert"></div>
+
+            <div class="auth-field">
+                <label asp-for="TenDangNhap">Tên tài khoản hoặc email</label>
+                <div class="auth-input">
+                    <i class="bi bi-person"></i>
+                    <input asp-for="TenDangNhap" class="auth-ctl" autofocus autocomplete="username" placeholder="quanly@kho.vn" />
+                </div>
+                <span asp-validation-for="TenDangNhap" class="auth-error"></span>
             </div>
 
-            <div class="mb-3">
-                <label asp-for="MatKhau">Mật khẩu *</label>
-                <input asp-for="MatKhau" class="form-control" />
-                <span asp-validation-for="MatKhau" class="text-danger small"></span>
+            <div class="auth-field">
+                <label asp-for="MatKhau">Mật khẩu</label>
+                <div class="auth-input">
+                    <i class="bi bi-lock"></i>
+                    <input asp-for="MatKhau" id="matkhau" class="auth-ctl" autocomplete="current-password" placeholder="••••••••" />
+                    <button type="button" class="auth-eye" id="togglePw" aria-label="Hiện/ẩn mật khẩu"><i class="bi bi-eye"></i></button>
+                </div>
+                <span asp-validation-for="MatKhau" class="auth-error"></span>
             </div>
 
-            <div class="form-check mb-3">
-                <input asp-for="GhiNho" class="form-check-input" />
-                <label asp-for="GhiNho" class="form-check-label fw-semibold">Ghi nhớ mật khẩu</label>
-            </div>
+            <label class="auth-check">
+                <input asp-for="GhiNho" type="checkbox" />
+                <span>Ghi nhớ đăng nhập</span>
+            </label>
 
-            <button type="submit" class="btn btn-login">ĐĂNG NHẬP</button>
+            <button type="submit" class="btn-auth">Đăng nhập <i class="bi bi-arrow-right"></i></button>
         </form>
     </div>
-</div>
-
+    <small class="auth-foot">Hệ thống nội bộ · Chỉ dành cho nhân viên cửa hàng</small>
+</section>
+<style>
+    .auth-wrap, .auth-wrap *, .auth-wrap input, .auth-wrap button {
+        font-family: "Be Vietnam Pro", "Segoe UI", Arial, sans-serif !important;
+    }
+    .auth-wrap .auth-title { font-family: "Cormorant Garamond", Georgia, serif !important; }
+    .auth-wrap .auth-ctl { font-size: .95rem !important; font-weight: 500 !important; letter-spacing: 0 !important; }
+    .auth-wrap .auth-ctl[type="password"] { letter-spacing: 2px !important; }
+</style>
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var btn = document.getElementById('togglePw'), pw = document.getElementById('matkhau');
+            if (!btn || !pw) return;
+            btn.addEventListener('click', function () {
+                var show = pw.type === 'password';
+                pw.type = show ? 'text' : 'password';
+                btn.firstElementChild.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+            });
+        })();
+    </script>
 }

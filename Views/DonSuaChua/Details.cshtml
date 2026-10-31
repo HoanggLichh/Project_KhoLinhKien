@@ -4,13 +4,15 @@
     var tienLk = Model.ChiTiets.Sum(c => c.SoLuong * c.DonGia);
     var tong = tienLk + Model.CongTho;
     var stt = 0;
+    var conSua = Model.TrangThai != KhoLinhKien.Models.TrangThaiDon.HoanTat;
+    var linhKiens = ViewData["LinhKiens"] as List<KhoLinhKien.Models.LinhKienChonVM>;
 }
 
 <a class="back-link" asp-action="Index"><i class="bi bi-arrow-left"></i> Quay lại danh sách đơn</a>
 
 <div class="detail-card" style="margin-bottom:1rem">
     <span class="code-chip">WO-@Model.Id.ToString("D3")</span>
-    <span class="pill @TrangThaiDon.Mau(Model.TrangThai)" style="margin-left:.5rem"><i></i>@TrangThaiDon.Ten(Model.TrangThai)</span>
+    <span class="pill @KhoLinhKien.Models.TrangThaiDon.Mau(Model.TrangThai)" style="margin-left:.5rem"><i></i>@KhoLinhKien.Models.TrangThaiDon.Ten(Model.TrangThai)</span>
     <h2>@Model.TenMay</h2>
     <div class="detail-grid">
         <div class="detail-item"><small>Khách hàng</small><b>@Model.TenKhach</b></div>
@@ -22,6 +24,37 @@
 </div>
 
 <h6 class="fw-bold mb-2">Linh kiện đã dùng</h6>
+
+@if (conSua && linhKiens != null)
+{
+        <form asp-action="ThemLinhKien" asp-route-id="@Model.Id" method="post" class="issue-form" novalidate>
+        <div class="issue-field grow">
+            <label>Linh kiện</label>
+            <select name="linhKienId" id="lkSelect" class="form-ctl">
+                <option value="0">-- Chọn linh kiện cần xuất --</option>
+                @foreach (var lk in linhKiens)
+                {
+                    if (lk.Ton > 0)
+                    {
+                        <option value="@lk.Id" data-ton="@lk.Ton" data-gia="@((long)lk.DonGia)">@lk.Ten (tồn @lk.Ton)</option>
+                    }
+                    else
+                    {
+                        <option value="@lk.Id" disabled>@lk.Ten (hết hàng)</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="issue-field">
+            <label>Số lượng</label>
+            <input type="number" name="soLuong" id="lkSoLuong" class="form-ctl" min="1" value="1" />
+        </div>
+        <button type="submit" class="btn-save"><i class="bi bi-box-arrow-up"></i> Xuất cho đơn</button>
+        
+    </form>
+    <div id="lkInfo" class="text-muted" style="margin:.4rem 0 1rem;font-size:.9rem"></div>
+}
+
 @if (!Model.ChiTiets.Any())
 {
     <div class="empty-state"><i class="bi bi-cpu"></i><b>Chưa xuất linh kiện cho đơn này</b></div>
@@ -30,7 +63,7 @@ else
 {
     <div class="tbl-wrap">
         <table class="tbl" style="min-width:0">
-            <thead><tr><th>STT</th><th>Linh kiện</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+            <thead><tr><th>STT</th><th>Linh kiện</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th>@if (conSua){<th></th>}</tr></thead>
             <tbody>
                 @foreach (var c in Model.ChiTiets)
                 {
@@ -40,6 +73,16 @@ else
                         <td class="num">@c.SoLuong</td>
                         <td>@(c.DonGia.ToString("N0") + "đ")</td>
                         <td class="num">@((c.SoLuong * c.DonGia).ToString("N0") + "đ")</td>
+                        @if (conSua)
+                        {
+                            <td>
+                                <form asp-action="XoaDong" method="post" onsubmit="return confirm('Bỏ dòng này khỏi đơn? Số lượng sẽ được hoàn lại vào kho.');">
+                                    <input type="hidden" name="id" value="@Model.Id" />
+                                    <input type="hidden" name="chiTietId" value="@c.Id" />
+                                    <button type="submit" class="icon-btn del" title="Bỏ dòng và hoàn kho"><i class="bi bi-x-lg"></i></button>
+                                </form>
+                            </td>
+                        }
                     </tr>
                 }
             </tbody>
@@ -52,3 +95,24 @@ else
     <span>Tiền công: <b>@(Model.CongTho.ToString("N0") + "đ")</b></span>
     <span>Tổng cộng: <b>@(tong.ToString("N0") + "đ")</b></span>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var sel = document.getElementById('lkSelect');
+            if (!sel) return;
+            var sl = document.getElementById('lkSoLuong');
+            var info = document.getElementById('lkInfo');
+            sel.addEventListener('change', function () {
+                var o = sel.options[sel.selectedIndex];
+                if (o.dataset.ton) {
+                    sl.max = o.dataset.ton;
+                    info.textContent = 'Tồn hiện tại: ' + o.dataset.ton + ' · Giá: ' + Number(o.dataset.gia).toLocaleString('en-US') + 'đ';
+                } else {
+                    sl.removeAttribute('max');
+                    info.textContent = '';
+                }
+            });
+        })();
+    </script>
+}
