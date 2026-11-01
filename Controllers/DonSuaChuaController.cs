@@ -218,4 +218,60 @@ public class DonSuaChuaController : Controller
 
         return RedirectToAction(nameof(Details), new { id });
     }
+
+        // ===== PHẦN C: trạng thái và tiền công =====
+
+    [Authorize(Roles = "QuanLy,KyThuatVien")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DoiTrangThai(int id, string trangThai)
+    {
+        var don = await _context.DonSuaChua.FirstOrDefaultAsync(x => x.Id == id);
+        if (don == null) return NotFound();
+
+        // Chỉ cho đi tới: Nhận máy -> Đang sửa -> Hoàn tất
+        var hopLe =
+            (don.TrangThai == TrangThaiDon.NhanMay && trangThai == TrangThaiDon.DangSua) ||
+            (don.TrangThai == TrangThaiDon.DangSua && trangThai == TrangThaiDon.HoanTat);
+
+        if (!hopLe)
+        {
+            TempData["Loi"] = "Không thể chuyển đơn sang trạng thái này.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        don.TrangThai = trangThai;
+        await _context.SaveChangesAsync();
+
+        TempData["ThongBao"] = $"Đơn WO-{id:D3} đã chuyển sang: {TrangThaiDon.Ten(trangThai)}.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [Authorize(Roles = "QuanLy,KyThuatVien")]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CapNhatCong(int id, decimal congTho)
+    {
+        var don = await _context.DonSuaChua.FirstOrDefaultAsync(x => x.Id == id);
+        if (don == null) return NotFound();
+
+        if (don.TrangThai == TrangThaiDon.HoanTat)
+        {
+            TempData["Loi"] = "Đơn đã hoàn tất, không thể sửa tiền công.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        if (congTho < 0 || congTho > 1000000000)
+        {
+            TempData["Loi"] = "Tiền công không hợp lệ.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        don.CongTho = congTho;
+        await _context.SaveChangesAsync();
+
+        TempData["ThongBao"] = $"Đã lưu tiền công {congTho:N0}đ cho đơn WO-{id:D3}.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
 }

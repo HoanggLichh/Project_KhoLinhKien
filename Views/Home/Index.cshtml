@@ -1,4 +1,19 @@
-﻿@{ ViewData["Title"] = "Tổng quan"; }
+﻿@model KhoLinhKien.Models.DashboardVM
+@{
+    ViewData["Title"] = "Tổng quan";
+    var inv = System.Globalization.CultureInfo.InvariantCulture;
+    var quyenKho = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
+
+    // Doanh thu tháng: rút gọn thành M / K cho vừa thẻ
+    decimal dtSo; int dtDec; string dtHau;
+    if (Model.DoanhThuThang >= 1_000_000m) { dtSo = Math.Round(Model.DoanhThuThang / 1_000_000m, 1); dtDec = 1; dtHau = "M"; }
+    else if (Model.DoanhThuThang >= 1_000m) { dtSo = Math.Round(Model.DoanhThuThang / 1_000m, 0); dtDec = 0; dtHau = "K"; }
+    else { dtSo = Model.DoanhThuThang; dtDec = 0; dtHau = "đ"; }
+    var dtChu = dtSo.ToString("0.#", inv) + dtHau;
+
+    // Biểu đồ 7 ngày
+    var maxNgay = Model.Ngay7.Any() ? Model.Ngay7.Max(x => x.GiaTri) : 0m;
+}
 
 @if (!User.Identity!.IsAuthenticated)
 {
@@ -36,16 +51,15 @@ else
 
     <div class="hx-ticker anim" aria-hidden="true">
         <div class="hx-ticker-track">
-            <span class="ok">● HỆ THỐNG TRỰC TUYẾN</span>
-            <span>TỒN KHO ỔN ĐỊNH 99%</span>
-            <span class="warn">12 LINH KIỆN CẦN NHẬP</span>
-            <span>48 ĐƠN ĐÃ HOÀN THÀNH</span>
-            <span>DOANH THU THÁNG 15.4M</span>
-            <span class="ok">● HỆ THỐNG TRỰC TUYẾN</span>
-            <span>TỒN KHO ỔN ĐỊNH 99%</span>
-            <span class="warn">12 LINH KIỆN CẦN NHẬP</span>
-            <span>48 ĐƠN ĐÃ HOÀN THÀNH</span>
-            <span>DOANH THU THÁNG 15.4M</span>
+            @for (int r = 0; r < 2; r++)
+            {
+                <span class="ok">● HỆ THỐNG TRỰC TUYẾN</span>
+                <span>TỔNG TỒN KHO @Model.TongLinhKien.ToString("N0") LINH KIỆN</span>
+                <span class="@(Model.SapHetHang > 0 ? "warn" : "ok")">@Model.SapHetHang LINH KIỆN CẦN NHẬP</span>
+                <span>@Model.DonDangSua ĐƠN ĐANG SỬA</span>
+                <span>@Model.DonHoanTat ĐƠN ĐÃ HOÀN THÀNH</span>
+                <span>DOANH THU THÁNG @dtChu</span>
+            }
         </div>
     </div>
 
@@ -62,7 +76,7 @@ else
         <div class="col-md-6 col-xl-3 anim" style="--d:.1s">
             <div class="hx-card c-blue">
                 <div class="hx-card-top">
-                    <div><div class="hx-label">Tổng linh kiện</div><div class="hx-value" data-count="1245">0</div></div>
+                    <div><div class="hx-label">Tổng linh kiện</div><div class="hx-value" data-count="@Model.TongLinhKien">0</div></div>
                     <div class="hx-icon"><i class="bi bi-boxes"></i></div>
                 </div>
                 <svg class="hx-spark" viewBox="0 0 120 36" preserveAspectRatio="none"><path pathLength="1" d="M0 28 L15 22 L30 25 L45 14 L60 18 L75 8 L90 12 L105 4 L120 6"/></svg>
@@ -71,7 +85,7 @@ else
         <div class="col-md-6 col-xl-3 anim" style="--d:.2s">
             <div class="hx-card c-red">
                 <div class="hx-card-top">
-                    <div><div class="hx-label">Sắp hết hàng</div><div class="hx-value" data-count="12">0</div></div>
+                    <div><div class="hx-label">Sắp hết hàng</div><div class="hx-value" data-count="@Model.SapHetHang">0</div></div>
                     <div class="hx-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
                 </div>
                 <svg class="hx-spark" viewBox="0 0 120 36" preserveAspectRatio="none"><path pathLength="1" d="M0 6 L15 10 L30 8 L45 16 L60 14 L75 22 L90 20 L105 28 L120 26"/></svg>
@@ -80,7 +94,7 @@ else
         <div class="col-md-6 col-xl-3 anim" style="--d:.3s">
             <div class="hx-card c-green">
                 <div class="hx-card-top">
-                    <div><div class="hx-label">Đơn hoàn thành</div><div class="hx-value" data-count="48">0</div></div>
+                    <div><div class="hx-label">Đơn hoàn thành</div><div class="hx-value" data-count="@Model.DonHoanTat">0</div></div>
                     <div class="hx-icon"><i class="bi bi-clipboard-check-fill"></i></div>
                 </div>
                 <svg class="hx-spark" viewBox="0 0 120 36" preserveAspectRatio="none"><path pathLength="1" d="M0 30 L15 26 L30 28 L45 20 L60 22 L75 14 L90 16 L105 8 L120 10"/></svg>
@@ -89,7 +103,7 @@ else
         <div class="col-md-6 col-xl-3 anim" style="--d:.4s">
             <div class="hx-card c-cyan">
                 <div class="hx-card-top">
-                    <div><div class="hx-label">Doanh thu tháng</div><div class="hx-value" data-count="15.4" data-dec="1" data-suffix="M">0</div></div>
+                    <div><div class="hx-label">Doanh thu tháng</div><div class="hx-value" data-count="@dtSo.ToString(inv)" data-dec="@dtDec" data-suffix="@dtHau">0</div></div>
                     <div class="hx-icon"><i class="bi bi-wallet2"></i></div>
                 </div>
                 <svg class="hx-spark" viewBox="0 0 120 36" preserveAspectRatio="none"><path pathLength="1" d="M0 26 L15 24 L30 18 L45 20 L60 12 L75 14 L90 6 L105 9 L120 3"/></svg>
@@ -103,18 +117,25 @@ else
             <div class="hx-panel">
                 <div class="hx-panel-head">
                     <div class="hx-title"><span class="hx-tag blue"><i class="bi bi-activity"></i></span>
-                        <div><h6>Doanh thu 7 ngày gần nhất</h6><small>Đơn vị: triệu đồng</small></div>
+                        <div><h6>Doanh thu 7 ngày gần nhất</h6><small>Đơn vị: triệu đồng · tính các đơn đã hoàn tất theo ngày nhận máy</small></div>
                     </div>
-                    <span class="hx-badge">+12.4% so với tuần trước</span>
+                    @if (Model.PhanTramTuan is decimal pt)
+                    {
+                        <span class="hx-badge">@((pt >= 0 ? "+" : "") + pt.ToString("0.#", inv))% so với tuần trước</span>
+                    }
+                    else
+                    {
+                        <span class="hx-badge">Chưa có dữ liệu tuần trước</span>
+                    }
                 </div>
                 <div class="hx-bars">
-                    <div class="hx-bar" style="--h:48%;--i:0" data-v="1.8"><span></span><em>T2</em></div>
-                    <div class="hx-bar" style="--h:62%;--i:1" data-v="2.3"><span></span><em>T3</em></div>
-                    <div class="hx-bar" style="--h:40%;--i:2" data-v="1.5"><span></span><em>T4</em></div>
-                    <div class="hx-bar" style="--h:78%;--i:3" data-v="2.9"><span></span><em>T5</em></div>
-                    <div class="hx-bar" style="--h:66%;--i:4" data-v="2.4"><span></span><em>T6</em></div>
-                    <div class="hx-bar peak" style="--h:94%;--i:5" data-v="3.5"><span></span><em>T7</em></div>
-                    <div class="hx-bar" style="--h:55%;--i:6" data-v="2.0"><span></span><em>CN</em></div>
+                    @for (int n = 0; n < Model.Ngay7.Count; n++)
+                    {
+                        var ng = Model.Ngay7[n];
+                        var cao = maxNgay > 0 ? Math.Max(4, (int)Math.Round(ng.GiaTri / maxNgay * 100)) : 4;
+                        var dinh = maxNgay > 0 && ng.GiaTri == maxNgay;
+                        <div class="hx-bar @(dinh ? "peak" : "")" style="--h:@(cao)%;--i:@n" data-v="@((ng.GiaTri / 1_000_000m).ToString("0.##", inv))"><span></span><em>@ng.Nhan</em></div>
+                    }
                 </div>
             </div>
         </div>
@@ -126,33 +147,35 @@ else
             <div class="hx-panel">
                 <div class="hx-panel-head">
                     <div class="hx-title"><span class="hx-tag blue"><i class="bi bi-wrench-adjustable"></i></span>
-                        <div><h6>Đơn sửa chữa gần đây</h6><small>3 đơn mới nhất</small></div>
+                        <div><h6>Đơn sửa chữa gần đây</h6><small>@Model.DonGanDay.Count đơn mới nhất</small></div>
                     </div>
                     <a class="link-more" asp-controller="DonSuaChua" asp-action="Index">Xem tất cả <i class="bi bi-arrow-right"></i></a>
                 </div>
 
                 <div class="hx-orders">
-                    <div class="hx-row" style="--i:0">
-                        <div class="avatar a1">A</div>
-                        <div class="order-info"><b>Nguyễn Văn A</b><small>iPhone 13 · Thay màn hình</small></div>
-                        <div class="hx-steps s3"><i></i><i></i><i></i></div>
-                        <span class="pill done"><i></i>Hoàn thành</span>
-                        <div class="order-money"><b>450,000đ</b><small>#WO-001</small></div>
-                    </div>
-                    <div class="hx-row" style="--i:1">
-                        <div class="avatar a2">B</div>
-                        <div class="order-info"><b>Trần Thị B</b><small>Samsung S22 · Thay pin</small></div>
-                        <div class="hx-steps s2"><i></i><i></i><i></i></div>
-                        <span class="pill doing"><i></i>Đang xử lý</span>
-                        <div class="order-money"><b>1,200,000đ</b><small>#WO-002</small></div>
-                    </div>
-                    <div class="hx-row" style="--i:2">
-                        <div class="avatar a3">C</div>
-                        <div class="order-info"><b>Lê Văn C</b><small>Xiaomi Note 8 · Thay cụm đuôi sạc</small></div>
-                        <div class="hx-steps s1"><i></i><i></i><i></i></div>
-                        <span class="pill wait"><i></i>Chờ linh kiện</span>
-                        <div class="order-money"><b class="muted">Chưa báo giá</b><small>#WO-003</small></div>
-                    </div>
+                    @if (!Model.DonGanDay.Any())
+                    {
+                        <div class="empty-state"><i class="bi bi-wrench-adjustable"></i><b>Chưa có đơn sửa chữa nào</b></div>
+                    }
+                    @for (int d = 0; d < Model.DonGanDay.Count; d++)
+                    {
+                        var x = Model.DonGanDay[d];
+                        var ten = x.TenKhach.Trim();
+                        var chuCai = ten.Length > 0 ? ten.Split(' ').Last().Substring(0, 1).ToUpper() : "?";
+                        var tong = x.CongTho + x.ChiTiets.Sum(c => c.SoLuong * c.DonGia);
+                        var buoc = x.TrangThai == KhoLinhKien.Models.TrangThaiDon.HoanTat ? 3
+                                 : x.TrangThai == KhoLinhKien.Models.TrangThaiDon.DangSua ? 2 : 1;
+                        <a class="hx-row" style="--i:@d;text-decoration:none;color:inherit" asp-controller="DonSuaChua" asp-action="Details" asp-route-id="@x.Id">
+                            <div class="avatar a@((d % 3) + 1)">@chuCai</div>
+                            <div class="order-info"><b>@x.TenKhach</b><small>@x.TenMay · @x.MoTaLoi</small></div>
+                            <div class="hx-steps s@(buoc)"><i></i><i></i><i></i></div>
+                            <span class="pill @KhoLinhKien.Models.TrangThaiDon.Mau(x.TrangThai)"><i></i>@KhoLinhKien.Models.TrangThaiDon.Ten(x.TrangThai)</span>
+                            <div class="order-money">
+                                @if (tong > 0) { <b>@(tong.ToString("N0") + "đ")</b> } else { <b class="muted">Chưa báo giá</b> }
+                                <small>#WO-@x.Id.ToString("D3")</small>
+                            </div>
+                        </a>
+                    }
                 </div>
             </div>
         </div>
@@ -163,33 +186,34 @@ else
                     <div class="hx-title"><span class="hx-tag red"><i class="bi bi-exclamation-triangle-fill"></i></span>
                         <div><h6>Cảnh báo tồn kho</h6><small>Cần nhập thêm</small></div>
                     </div>
-                    <span class="count-pill">2</span>
+                    <span class="count-pill">@Model.SapHetHang</span>
                 </div>
 
                 <div class="hx-alerts">
-                    <div class="hx-alert" style="--i:0">
-                        <div class="stock-top">
-                            <div class="stock-name"><b>Màn hình iPhone 13</b><small><i class="bi bi-geo-alt-fill"></i> Kệ A1 - Tầng 2</small></div>
-                            <div class="stock-qty"><b>2</b><span>/ 10</span></div>
+                    @if (!Model.CanhBao.Any())
+                    {
+                        <div class="empty-state"><i class="bi bi-check-circle"></i><b>Kho đang đủ hàng</b></div>
+                    }
+                    @for (int k = 0; k < Model.CanhBao.Count; k++)
+                    {
+                        var lk = Model.CanhBao[k];
+                        var bat = lk.SoLuongTon <= 0 ? 0
+                                : lk.TonToiThieu > 0 ? Math.Min(10, (int)Math.Ceiling(lk.SoLuongTon * 10.0 / lk.TonToiThieu)) : 0;
+                        <div class="hx-alert" style="--i:@k">
+                            <div class="stock-top">
+                                <div class="stock-name"><b>@lk.TenLinhKien</b><small><i class="bi bi-geo-alt-fill"></i> @(lk.ViTriKho?.TenViTri ?? "Chưa gán vị trí")</small></div>
+                                <div class="stock-qty"><b>@lk.SoLuongTon</b><span>/ @lk.TonToiThieu</span></div>
+                            </div>
+                            <div class="hx-seg">@for (int s = 0; s < 10; s++) { <i class="@(s < bat ? "on" : "")"></i> }</div>
+                            <div class="stock-foot">
+                                <span>@(lk.SoLuongTon == 0 ? "Hết hàng, nhập gấp" : "Rất thấp, nhập gấp")</span>
+                                @if (quyenKho)
+                                {
+                                    <a asp-controller="PhieuNhap" asp-action="Create" class="btn-restock">Nhập thêm</a>
+                                }
+                            </div>
                         </div>
-                        <div class="hx-seg">@for (int s = 0; s < 10; s++) { <i class="@(s < 2 ? "on" : "")"></i> }</div>
-                        <div class="stock-foot">
-                            <span>Rất thấp, nhập gấp</span>
-                            <a asp-controller="PhieuNhap" asp-action="Create" class="btn-restock">Nhập thêm</a>
-                        </div>
-                    </div>
-
-                    <div class="hx-alert" style="--i:1">
-                        <div class="stock-top">
-                            <div class="stock-name"><b>Pin Samsung S22</b><small><i class="bi bi-geo-alt-fill"></i> Kệ B3 - Tầng 1</small></div>
-                            <div class="stock-qty"><b>1</b><span>/ 5</span></div>
-                        </div>
-                        <div class="hx-seg">@for (int s = 0; s < 10; s++) { <i class="@(s < 2 ? "on" : "")"></i> }</div>
-                        <div class="stock-foot">
-                            <span>Rất thấp, nhập gấp</span>
-                            <a asp-controller="PhieuNhap" asp-action="Create" class="btn-restock">Nhập thêm</a>
-                        </div>
-                    </div>
+                    }
                 </div>
             </div>
         </div>
