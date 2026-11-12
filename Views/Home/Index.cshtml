@@ -9,7 +9,6 @@
     if (Model.DoanhThuThang >= 1_000_000m) { dtSo = Math.Round(Model.DoanhThuThang / 1_000_000m, 1); dtDec = 1; dtHau = "M"; }
     else if (Model.DoanhThuThang >= 1_000m) { dtSo = Math.Round(Model.DoanhThuThang / 1_000m, 0); dtDec = 0; dtHau = "K"; }
     else { dtSo = Model.DoanhThuThang; dtDec = 0; dtHau = "đ"; }
-    var dtChu = dtSo.ToString("0.#", inv) + dtHau;
 
     // Biểu đồ 7 ngày
     var maxNgay = Model.Ngay7.Any() ? Model.Ngay7.Max(x => x.GiaTri) : 0m;
@@ -48,28 +47,6 @@
 else
 {
     <div class="aurora" aria-hidden="true"><span></span><span></span></div>
-
-    <div class="hx-ticker anim" aria-hidden="true">
-        <div class="hx-ticker-track">
-            @for (int r = 0; r < 2; r++)
-            {
-                <span class="ok">● HỆ THỐNG TRỰC TUYẾN</span>
-                <span>TỔNG TỒN KHO @Model.TongLinhKien.ToString("N0") LINH KIỆN</span>
-                <span class="@(Model.SapHetHang > 0 ? "warn" : "ok")">@Model.SapHetHang LINH KIỆN CẦN NHẬP</span>
-                <span>@Model.DonDangSua ĐƠN ĐANG SỬA</span>
-                <span>@Model.DonHoanTat ĐƠN ĐÃ HOÀN THÀNH</span>
-                <span>DOANH THU THÁNG @dtChu</span>
-            }
-        </div>
-    </div>
-
-    <div class="dash-head hx-head anim">
-        <div>
-            <div class="hx-eyebrow"><span class="hx-live"></span> TRỰC TUYẾN · <b id="hxClock">--:--:--</b></div>
-            <h1>Dashboard <em>Tổng Quan</em></h1>
-        </div>
-        <span class="dash-date">Hôm nay: @DateTime.Now.ToString("dd/MM/yyyy")</span>
-    </div>
 
     <!-- ===== 4 thẻ thống kê ===== -->
     <div class="row g-3 mb-3">
@@ -224,13 +201,6 @@ else
     <script>
         (function () {
             var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-            // Đồng hồ trực tuyến
-            var clock = document.getElementById('hxClock');
-            if (clock) {
-                var tick = function () { clock.textContent = new Date().toLocaleTimeString('vi-VN', { hour12: false }); };
-                tick(); setInterval(tick, 1000);
-            }
 
             // Đếm số từ 0 lên
             document.querySelectorAll('[data-count]').forEach(function (el) {

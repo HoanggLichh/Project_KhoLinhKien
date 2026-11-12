@@ -1,0 +1,62 @@
+@model KhoLinhKien.Controllers.RegisterViewModel
+@{ ViewData["Title"] = "Tạo tài khoản"; }
+
+<div class="aurora" aria-hidden="true"><span></span><span></span></div>
+
+<section class="auth-wrap">
+    <div class="auth-card">
+        <h1 class="auth-title">Tạo tài khoản</h1>
+        <p class="auth-sub">Đăng ký để dùng <b>L-Inventory</b></p>
+
+        <form asp-action="Register" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="auth-alert"></div>
+
+            <div class="auth-field">
+                <label asp-for="Email">Email</label>
+                <div class="auth-input">
+                    <i class="bi bi-envelope"></i>
+                    <input asp-for="Email" class="auth-ctl" autofocus autocomplete="email" placeholder="ten@email.com" />
+                </div>
+                <span asp-validation-for="Email" class="auth-error"></span>
+            </div>
+
+            <div class="auth-field">
+                <label asp-for="MatKhau">Mật khẩu</label>
+                <div class="auth-input">
+                    <i class="bi bi-lock"></i>
+                    <input asp-for="MatKhau" id="pw1" class="auth-ctl" autocomplete="new-password" placeholder="••••••••" />
+                    <button type="button" class="auth-eye" data-target="pw1" aria-label="Hiện/ẩn"><i class="bi bi-eye"></i></button>
+                </div>
+                <span asp-validation-for="MatKhau" class="auth-error"></span>
+            </div>
+
+            <div class="auth-field">
+                <label asp-for="XacNhanMatKhau">Nhập lại mật khẩu</label>
+                <div class="auth-input">
+                    <i class="bi bi-shield-lock"></i>
+                    <input asp-for="XacNhanMatKhau" id="pw2" class="auth-ctl" autocomplete="new-password" placeholder="••••••••" />
+                    <button type="button" class="auth-eye" data-target="pw2" aria-label="Hiện/ẩn"><i class="bi bi-eye"></i></button>
+                </div>
+                <span asp-validation-for="XacNhanMatKhau" class="auth-error"></span>
+            </div>
+
+            <button type="submit" class="btn-auth">Tạo tài khoản <i class="bi bi-arrow-right"></i></button>
+        </form>
+
+        <p class="auth-switch">Đã có tài khoản? <a asp-action="Login">Đăng nhập</a></p>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelectorAll('.auth-eye[data-target]').forEach(function (b) {
+            b.addEventListener('click', function () {
+                var p = document.getElementById(b.dataset.target);
+                var show = p.type === 'password';
+                p.type = show ? 'text' : 'password';
+                b.firstElementChild.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+            });
+        });
+    </script>
+}
