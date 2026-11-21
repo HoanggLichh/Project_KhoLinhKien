@@ -1,0 +1,83 @@
+@model List<KhoLinhKien.Models.LinhKien>
+@{
+    ViewData["Title"] = "Báo cáo tồn kho";
+    string? tt = ViewBag.TT;
+
+    var tong = Model.Count;
+    var hetHang = Model.Count(x => x.SoLuongTon <= 0);
+    var sapHet = Model.Count(x => x.SoLuongTon > 0 && x.SoLuongTon <= x.TonToiThieu);
+    var duHang = tong - hetHang - sapHet;
+    var giaTri = Model.Sum(x => x.SoLuongTon * x.DonGia);
+    var i = 0;
+}
+
+<div class="page-head">
+    <div>
+        <h1>Báo cáo tồn kho</h1>
+        <p>Theo dõi số lượng, mức tồn tối thiểu và tình trạng từng linh kiện</p>
+    </div>
+    <a class="btn-soft" asp-action="XuatCsv" asp-route-tt="@tt"><i class="bi bi-download"></i> Xuất CSV</a>
+</div>
+
+<div class="detail-grid" style="margin-bottom:1rem">
+    <div class="detail-item"><small>Số mặt hàng</small><b>@tong</b></div>
+    <div class="detail-item"><small>Đủ hàng</small><b style="color:var(--r-ok,#16a34a)">@duHang</b></div>
+    <div class="detail-item"><small>Sắp hết</small><b style="color:var(--r-warn,#d97706)">@sapHet</b></div>
+    <div class="detail-item"><small>Hết hàng</small><b style="color:var(--r-bad,#dc2626)">@hetHang</b></div>
+    <div class="detail-item"><small>Giá trị tồn kho</small><b>@(giaTri.ToString("N0") + "đ")</b></div>
+</div>
+
+<div class="toolbar">
+    <a class="@(tt == null ? "btn-primary-soft" : "btn-soft")" asp-action="TonKho"><i class="bi bi-list-ul"></i> Tất cả</a>
+    <a class="@(tt == "saphet" ? "btn-primary-soft" : "btn-soft")" asp-action="TonKho" asp-route-tt="saphet"><i class="bi bi-exclamation-circle"></i> Sắp hết</a>
+    <a class="@(tt == "hethang" ? "btn-primary-soft" : "btn-soft")" asp-action="TonKho" asp-route-tt="hethang"><i class="bi bi-x-circle"></i> Hết hàng</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <b>Không có linh kiện phù hợp</b>
+        <span>Thử chọn bộ lọc khác.</span>
+    </div>
+}
+else
+{
+    <div class="result-count">Hiển thị <b>@Model.Count</b> linh kiện</div>
+    <div class="tbl-wrap">
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>Mã</th><th>Linh kiện</th><th>Loại</th>
+                    <th>Tồn / tối thiểu</th><th>Trạng thái</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var x in Model)
+                {
+                    var cls = x.SoLuongTon <= 0 ? "wait" : x.SoLuongTon <= x.TonToiThieu ? "doing" : "done";
+                    var nhan = x.SoLuongTon <= 0 ? "Hết hàng" : x.SoLuongTon <= x.TonToiThieu ? "Sắp hết" : "Đủ hàng";
+                    var pct = x.TonToiThieu > 0 ? Math.Min(100, (int)Math.Round(x.SoLuongTon * 100.0 / (x.TonToiThieu * 2))) : 100;
+                    <tr style="--i:@Math.Min(i++, 14)">
+                        <td><span class="code-chip">@x.MaLinhKien</span></td>
+                        <td class="cell-title">
+                            <b>@x.TenLinhKien</b>
+                            <small>@(string.IsNullOrWhiteSpace(x.DongMayTuongThich) ? "Chưa ghi dòng máy" : x.DongMayTuongThich)</small>
+                        </td>
+                        <td><span class="tag">@x.LoaiLinhKien?.TenLoai</span></td>
+                        <td style="min-width:170px">
+                            <b class="num">@x.SoLuongTon</b> <span style="opacity:.6">/ @x.TonToiThieu</span>
+                            <div class="bar-soft" style="margin:.5rem 0 0"><div class="@cls" style="width:@(pct)%"></div></div>
+                        </td>
+                        <td><span class="pill @cls"><i></i>@nhan</span></td>
+                        <td>
+                            <div class="actions">
+                                <a class="icon-btn view" asp-controller="LinhKien" asp-action="LichSu" asp-route-id="@x.Id" title="Lịch sử nhập/xuất"><i class="bi bi-clock-history"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

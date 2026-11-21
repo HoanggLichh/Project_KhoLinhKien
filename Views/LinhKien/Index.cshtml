@@ -5,9 +5,13 @@
     var dsLoai = (SelectList)ViewData["LoaiId"]!;
     var dsViTri = (SelectList)ViewData["ViTriId"]!;
     var tuKhoa = ViewData["TuKhoa"] as string;
+    var tinhTrang = ViewData["TinhTrang"] as string;
+    var sapXep = ViewData["SapXep"] as string;
     var coLoc = !string.IsNullOrWhiteSpace(tuKhoa)
              || !string.IsNullOrEmpty(Context.Request.Query["loaiId"])
-             || !string.IsNullOrEmpty(Context.Request.Query["viTriId"]);
+             || !string.IsNullOrEmpty(Context.Request.Query["viTriId"])
+             || !string.IsNullOrEmpty(tinhTrang)
+             || !string.IsNullOrEmpty(sapXep);
     var i = 0;
 }
 
@@ -29,6 +33,20 @@
     </div>
     <select name="loaiId" class="select-soft" asp-items="dsLoai"><option value="">Tất cả loại</option></select>
     <select name="viTriId" class="select-soft" asp-items="dsViTri"><option value="">Tất cả vị trí</option></select>
+    <select name="tinhTrang" class="select-soft">
+        <option value="">Mọi tình trạng</option>
+        <option value="duhang" selected="@(tinhTrang == "duhang")">Đủ hàng</option>
+        <option value="saphet" selected="@(tinhTrang == "saphet")">Sắp hết</option>
+        <option value="hethang" selected="@(tinhTrang == "hethang")">Hết hàng</option>
+    </select>
+    <select name="sapXep" class="select-soft">
+        <option value="">Sắp xếp theo mã</option>
+        <option value="ten" selected="@(sapXep == "ten")">Theo tên A→Z</option>
+        <option value="ton_tang" selected="@(sapXep == "ton_tang")">Tồn tăng dần</option>
+        <option value="ton_giam" selected="@(sapXep == "ton_giam")">Tồn giảm dần</option>
+        <option value="gia_tang" selected="@(sapXep == "gia_tang")">Giá tăng dần</option>
+        <option value="gia_giam" selected="@(sapXep == "gia_giam")">Giá giảm dần</option>
+    </select>
     <button type="submit" class="btn-primary-soft"><i class="bi bi-funnel"></i> Lọc</button>
     @if (coLoc)
     {
@@ -79,6 +97,7 @@ else
                         <td>
                             <div class="actions">
                                 <a class="icon-btn view" asp-action="Details" asp-route-id="@x.Id" title="Xem chi tiết"><i class="bi bi-eye"></i></a>
+                                <a class="icon-btn view" asp-controller="LinhKien" asp-action="LichSu" asp-route-id="@x.Id" title="Lịch sử nhập/xuất"><i class="bi bi-clock-history"></i></a>
                                 @if (canEdit)
                                 {
                                     <a class="icon-btn edit" asp-action="Edit" asp-route-id="@x.Id" title="Sửa"><i class="bi bi-pencil-square"></i></a>

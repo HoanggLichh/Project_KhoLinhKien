@@ -1,6 +1,88 @@
 ﻿@{
-    ViewData["Title"] = "Privacy Policy";
+    ViewData["Title"] = "Chính sách bảo mật thông tin";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="page-head">
+    <div>
+        <h1>Chính sách bảo mật thông tin</h1>
+        <p>Cách L-Inventory thu thập, sử dụng và bảo vệ dữ liệu của cửa hàng và khách hàng</p>
+    </div>
+</div>
+
+<h6 class="fw-bold mb-2">1. Thông tin được thu thập</h6>
+<div class="tbl-wrap" style="margin-bottom:1.5rem">
+    <table class="tbl" style="min-width:0">
+        <thead><tr><th>Nhóm dữ liệu</th><th>Nội dung</th><th>Mục đích</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><span class="tag">Tài khoản nhân viên</span></td>
+                <td>Email đăng nhập, vai trò, mật khẩu (đã mã hóa)</td>
+                <td>Xác thực và phân quyền truy cập</td>
+            </tr>
+            <tr>
+                <td><span class="tag">Khách hàng</span></td>
+                <td>Họ tên, số điện thoại, máy cần sửa, mô tả lỗi</td>
+                <td>Tiếp nhận, liên hệ và trả máy</td>
+            </tr>
+            <tr>
+                <td><span class="tag">Giao dịch kho</span></td>
+                <td>Phiếu nhập, linh kiện xuất cho đơn, tiền công, người lập</td>
+                <td>Theo dõi tồn kho, doanh thu và truy vết thao tác</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<h6 class="fw-bold mb-2">2. Ai được xem dữ liệu nào</h6>
+<div class="tbl-wrap" style="margin-bottom:1.5rem">
+    <table class="tbl" style="min-width:0">
+        <thead><tr><th>Vai trò</th><th>Thông tin khách hàng</th><th>Báo cáo tồn kho và nhập kho</th></tr></thead>
+        <tbody>
+            <tr><td><span class="tag">Quản lý</span></td><td>Xem và xử lý</td><td>Xem toàn bộ</td></tr>
+            <tr><td><span class="tag">Thủ kho</span></td><td>Chỉ xem trong đơn sửa chữa</td><td>Xem và lập phiếu</td></tr>
+            <tr><td><span class="tag">Kỹ thuật viên</span></td><td>Xem và xử lý đơn của mình</td><td>Không truy cập</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<h6 class="fw-bold mb-2">3. Biện pháp bảo vệ trong hệ thống</h6>
+<div class="detail-grid" style="margin-bottom:1.5rem">
+    <div class="detail-item">
+        <small>Đăng nhập</small>
+        <b>Bắt buộc đăng nhập mới xem được dữ liệu</b>
+    </div>
+    <div class="detail-item">
+        <small>Mật khẩu</small>
+        <b>Lưu dạng băm một chiều (ASP.NET Core Identity), không lưu mật khẩu gốc</b>
+    </div>
+    <div class="detail-item">
+        <small>Phân quyền</small>
+        <b>Kiểm tra vai trò ở phía máy chủ cho từng chức năng</b>
+    </div>
+    <div class="detail-item">
+        <small>Chống giả mạo yêu cầu</small>
+        <b>Mọi thao tác ghi dữ liệu đều dùng mã chống giả mạo (anti-forgery token)</b>
+    </div>
+    <div class="detail-item">
+        <small>Toàn vẹn dữ liệu</small>
+        <b>Nhập kho và xuất linh kiện chạy trong giao dịch: lỗi thì hoàn tác toàn bộ</b>
+    </div>
+    <div class="detail-item">
+        <small>Truy vết</small>
+        <b>Mỗi phiếu nhập và đơn sửa chữa ghi lại tài khoản người lập</b>
+    </div>
+</div>
+
+<h6 class="fw-bold mb-2">4. Trách nhiệm của người dùng</h6>
+<div class="note-box" style="display:block">
+    <ul style="margin:0;padding-left:1.2rem">
+        <li>Không chia sẻ tài khoản và mật khẩu cho người khác.</li>
+        <li>Đăng xuất khi rời máy, nhất là máy dùng chung tại cửa hàng.</li>
+        <li>Chỉ dùng thông tin khách hàng cho mục đích sửa chữa, không sao chép hoặc cung cấp cho bên ngoài.</li>
+        <li>Báo ngay cho Quản lý khi phát hiện truy cập bất thường hoặc nghi ngờ lộ mật khẩu.</li>
+    </ul>
+</div>
+
+<p style="margin-top:1.2rem;opacity:.65;font-size:.88rem">
+    Hệ thống nội bộ của cửa hàng, chỉ dành cho nhân viên được cấp tài khoản. Chính sách có thể được cập nhật khi hệ thống thay đổi.
+</p>

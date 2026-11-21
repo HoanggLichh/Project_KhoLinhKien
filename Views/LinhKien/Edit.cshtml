@@ -1,67 +1,76 @@
 @model KhoLinhKien.Models.LinhKien
-
+@using Microsoft.AspNetCore.Mvc.Rendering
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Sửa linh kiện";
+    var dsLoai = (SelectList)ViewData["LoaiLinhKienId"]!;
+    var dsViTri = (SelectList)ViewData["ViTriKhoId"]!;
 }
 
-<h1>Edit</h1>
+<div class="fm-wrap">
+    <a class="back-link" asp-action="Index"><i class="bi bi-arrow-left"></i> Quay lại danh sách</a>
 
-<h4>LinhKien</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="MaLinhKien" class="control-label"></label>
-                <input asp-for="MaLinhKien" class="form-control" />
-                <span asp-validation-for="MaLinhKien" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TenLinhKien" class="control-label"></label>
-                <input asp-for="TenLinhKien" class="form-control" />
-                <span asp-validation-for="TenLinhKien" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="LoaiLinhKienId" class="control-label"></label>
-                <select asp-for="LoaiLinhKienId" class="form-control" asp-items="ViewBag.LoaiLinhKienId"></select>
-                <span asp-validation-for="LoaiLinhKienId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ViTriKhoId" class="control-label"></label>
-                <select asp-for="ViTriKhoId" class="form-control" asp-items="ViewBag.ViTriKhoId">
-                <option value="">-- Chưa gán vị trí --</option>
-                </select>
-                <span asp-validation-for="ViTriKhoId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DongMayTuongThich" class="control-label"></label>
-                <input asp-for="DongMayTuongThich" class="form-control" />
-                <span asp-validation-for="DongMayTuongThich" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DonGia" class="control-label"></label>
-                <input asp-for="DonGia" class="form-control" />
-                <span asp-validation-for="DonGia" class="text-danger"></span>
-            </div>
-    
-            <div class="form-group">
-                <label asp-for="TonToiThieu" class="control-label"></label>
-                <input asp-for="TonToiThieu" class="form-control" />
-                <span asp-validation-for="TonToiThieu" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+    <div class="page-head">
+        <div>
+            <h1>Sửa linh kiện</h1>
+            <p>Cập nhật thông tin của <b>@Model.MaLinhKien</b>.</p>
+        </div>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <form asp-action="Edit" method="post" class="fm-card">
+        <div asp-validation-summary="ModelOnly" class="fm-err"></div>
+        <input type="hidden" asp-for="Id" />
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
+        <div class="fm-grid">
+            <div class="fm-field">
+                <label asp-for="MaLinhKien">Mã linh kiện</label>
+                <input asp-for="MaLinhKien" class="form-ctl" autocomplete="off" />
+                <span asp-validation-for="MaLinhKien" class="fm-err"></span>
+            </div>
+
+            <div class="fm-field">
+                <label asp-for="TenLinhKien">Tên linh kiện</label>
+                <input asp-for="TenLinhKien" class="form-ctl" autocomplete="off" />
+                <span asp-validation-for="TenLinhKien" class="fm-err"></span>
+            </div>
+
+            <div class="fm-field">
+                <label asp-for="LoaiLinhKienId">Loại linh kiện</label>
+                <select asp-for="LoaiLinhKienId" class="form-select" asp-items="dsLoai"></select>
+                <span asp-validation-for="LoaiLinhKienId" class="fm-err"></span>
+            </div>
+
+            <div class="fm-field">
+                <label asp-for="ViTriKhoId">Vị trí kho</label>
+                <select asp-for="ViTriKhoId" class="form-select" asp-items="dsViTri"></select>
+                <span asp-validation-for="ViTriKhoId" class="fm-err"></span>
+            </div>
+
+            <div class="fm-field full">
+                <label asp-for="DongMayTuongThich">Dòng máy tương thích</label>
+                <input asp-for="DongMayTuongThich" class="form-ctl" autocomplete="off" />
+                <span class="fm-hint">Ví dụ: iPhone 12, Samsung S22.</span>
+                <span asp-validation-for="DongMayTuongThich" class="fm-err"></span>
+            </div>
+
+            <div class="fm-field">
+                <label asp-for="DonGia">Đơn giá (đồng)</label>
+                <input asp-for="DonGia" class="form-ctl" inputmode="decimal" autocomplete="off" />
+                <span asp-validation-for="DonGia" class="fm-err"></span>
+            </div>
+
+            <div class="fm-field">
+                <label asp-for="TonToiThieu">Tồn tối thiểu</label>
+                <input asp-for="TonToiThieu" class="form-ctl" inputmode="numeric" autocomplete="off" />
+                <span class="fm-hint">Dùng để cảnh báo linh kiện sắp hết.</span>
+                <span asp-validation-for="TonToiThieu" class="fm-err"></span>
+            </div>
+        </div>
+
+        <p class="fm-note"><i class="bi bi-info-circle"></i> Số lượng tồn không sửa ở đây, chỉ thay đổi qua phiếu nhập kho và đơn sửa chữa.</p>
+
+        <div class="fm-actions">
+            <button type="submit" class="btn-add"><i class="bi bi-check2"></i> Lưu thay đổi</button>
+            <a class="btn-soft" asp-action="Index">Hủy</a>
+        </div>
+    </form>
+</div>

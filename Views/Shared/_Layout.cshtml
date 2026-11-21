@@ -1,9 +1,31 @@
-﻿@{
+﻿@using System.Security.Claims
+@inject IWebHostEnvironment Env
+@{
     var daDangNhap = User.Identity!.IsAuthenticated;
     var quyenKho = User.IsInRole("QuanLy") || User.IsInRole("ThuKho");
     var vaiTro = User.IsInRole("QuanLy") ? "Quản lý"
-               : User.IsInRole("ThuKho") ? "Thủ kho"
-               : User.IsInRole("KyThuatVien") ? "Kỹ thuật viên" : "";
+            : User.IsInRole("ThuKho") ? "Thủ kho"
+            : User.IsInRole("KyThuatVien") ? "Kỹ thuật viên" : "";
+    var laDashboard = (ViewContext.RouteData.Values["controller"]?.ToString() ?? "") == "Home"
+               && (ViewContext.RouteData.Values["action"]?.ToString() ?? "") == "Index";
+
+    // Ảnh đại diện: wwwroot/avatars/{Id tài khoản}.jpg|png|webp
+    string? avatarUrl = null;
+    var avatarUid = System.IO.Path.GetFileName(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "");
+    if (daDangNhap && avatarUid != "")
+    {
+        foreach (var ex in new[] { ".jpg", ".png", ".webp" })
+        {
+            var fp = System.IO.Path.Combine(Env.WebRootPath, "avatars", avatarUid + ex);
+            if (System.IO.File.Exists(fp))
+            {
+                avatarUrl = "/avatars/" + avatarUid + ex + "?v=" + System.IO.File.GetLastWriteTimeUtc(fp).Ticks;
+                break;
+            }
+        }
+    }
+    var chuCai = string.IsNullOrEmpty(User.Identity?.Name) ? "?" : User.Identity!.Name!.Substring(0, 1).ToUpper();
+    var backUrl = Context.Request.Path + Context.Request.QueryString;
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -12,13 +34,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - L-Inventory</title>
 
-    <!-- Áp theme ngay từ đầu để không bị nháy màu khi tải trang -->
     <script>
         (function () {
             var t = 'dark';
             try { t = localStorage.getItem('theme') || 'dark'; } catch (e) { }
             document.documentElement.setAttribute('data-theme', t);
             document.documentElement.setAttribute('data-bs-theme', t);
+            try { if (localStorage.getItem('motion') === 'off') document.documentElement.classList.add('no-motion'); } catch (e) { }
+            // Menu: mặc định mở trên máy tính, nhớ trạng thái giữa các trang, không chạy hiệu ứng khi vừa tải
+            try {
+                if (window.innerWidth > 767 && localStorage.getItem('menu') !== 'closed')
+                    document.documentElement.classList.add('mm-open');
+            } catch (e) { }
+            document.documentElement.classList.add('mm-init');
         })();
     </script>
     <link rel="icon" type="image/svg+xml" href="~/favicon.svg" asp-append-version="true" />
@@ -28,70 +56,114 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Nunito:wght@600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/redesign.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/menu-push.css" asp-append-version="true" />
+    @* Giữ ảnh đại diện luôn nhỏ gọn, kể cả khi redesign.css chưa cập nhật *@
+    <style>
+        .av { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; }
+        .av.av-lg { width: 48px; height: 48px; }
+        .av img { width: 100%; height: 100%; max-width: 100%; object-fit: cover; display: block; }
+    </style>
 </head>
 <body class="@(daDangNhap ? "app" : "guest")">
 
 @if (daDangNhap)
 {
-    <aside class="sidebar" id="sidebar">
-        <a class="brand" asp-controller="Home" asp-action="Index" aria-label="L-Inventory">
-            <svg class="logo-mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                    <linearGradient id="lgV" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-                        <stop offset="0" stop-color="#5eead4" />
-                        <stop offset="1" stop-color="#0f9b88" />
-                    </linearGradient>
-                </defs>
-                <path class="pins" d="M17 4v6M24 4v6M31 4v6M17 38v6M24 38v6M31 38v6M4 17h6M4 24h6M4 31h6M38 17h6M38 24h6M38 31h6"
-                      stroke="url(#lgV)" stroke-width="2.4" stroke-linecap="round" />
-                <rect x="10" y="10" width="28" height="28" rx="7" fill="#0b1f1c" stroke="url(#lgV)" stroke-width="2.4" />
-                <path d="M19 17v14h10" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
-                <circle class="led" cx="30" cy="19" r="2.8" fill="#f43f5e" />
-            </svg>
-            <span class="brand-text">
-                <span class="brand-name"><em>L</em>-INVENTORY</span>
-                <small>Kho linh kiện</small>
-            </span>
-        </a>
+    @* MENU: nằm ngoài .content để cao hết trang; khi mở sẽ đẩy .content sang bên *@
+    <nav class="mm-panel" id="mmPanel" aria-label="Menu chính">
 
-        <nav class="side-nav">
-            <a class="side-link" asp-controller="Home" asp-action="Index"><i class="bi bi-pie-chart-fill"></i> Tổng quan</a>
-            <a class="side-link" asp-controller="LinhKien" asp-action="Index"><i class="bi bi-motherboard"></i> Quản lý linh kiện</a>
-            <a class="side-link" asp-controller="DonSuaChua" asp-action="Index"><i class="bi bi-wrench-adjustable"></i> Đơn sửa chữa</a>
+        <a class="mm-brand" asp-controller="Home" asp-action="Index" aria-label="L-Inventory">
+    <svg class="logo-mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+            <linearGradient id="lgS" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#5eead4" />
+                <stop offset="1" stop-color="#0f9b88" />
+            </linearGradient>
+        </defs>
+        <path d="M17 4v6M24 4v6M31 4v6M17 38v6M24 38v6M31 38v6M4 17h6M4 24h6M4 31h6M38 17h6M38 24h6M38 31h6"
+              stroke="url(#lgS)" stroke-width="2.4" stroke-linecap="round" />
+        <rect x="10" y="10" width="28" height="28" rx="7" fill="#0b1f1c" stroke="url(#lgS)" stroke-width="2.4" />
+        <path d="M19 17v14h10" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
+        <circle cx="30" cy="19" r="2.8" fill="#f43f5e" />
+    </svg>
+    <span class="mm-brand-txt"><b><em>L</em>-INVENTORY</b><small>Kho linh kiện điện tử</small></span>
+</a>
 
-            @if (quyenKho)
-            {
-                <a class="side-link" asp-controller="LoaiLinhKien" asp-action="Index"><i class="bi bi-tags-fill"></i> Loại linh kiện</a>
-                <a class="side-link" asp-controller="NhaCungCap" asp-action="Index"><i class="bi bi-truck"></i> Nhà cung cấp</a>
-                <a class="side-link" asp-controller="ViTriKho" asp-action="Index"><i class="bi bi-boxes"></i> Vị trí lưu kho</a>
-                <a class="side-link" asp-controller="PhieuNhap" asp-action="Index"><i class="bi bi-box-arrow-in-down"></i> Phiếu nhập kho</a>
-            }
+        <div class="mm-group">Điều hành</div>
+        <div class="mm-grid">
+            <a class="mm-link" style="--i:0" asp-controller="Home" asp-action="Index"><span class="mm-ico"><i class="bi bi-pie-chart-fill"></i></span><span class="mm-txt"><b>Tổng quan</b><small>Số liệu và cảnh báo</small></span></a>
+            <a class="mm-link" style="--i:1" asp-controller="LinhKien" asp-action="Index"><span class="mm-ico"><i class="bi bi-motherboard"></i></span><span class="mm-txt"><b>Quản lý linh kiện</b><small>Tồn kho từng mã</small></span></a>
+            <a class="mm-link" style="--i:2" asp-controller="DonSuaChua" asp-action="Index"><span class="mm-ico"><i class="bi bi-wrench-adjustable"></i></span><span class="mm-txt"><b>Đơn sửa chữa</b><small>Máy nhận và tiến độ</small></span></a>
+        </div>
 
-            <a class="side-link" asp-controller="Home" asp-action="GioiThieu"><i class="bi bi-info-circle-fill"></i> Giới thiệu</a>
-        </nav>
+        @if (quyenKho)
+        {
+            <div class="mm-group">Danh mục và kho bãi</div>
+            <div class="mm-grid">
+                <a class="mm-link" style="--i:3" asp-controller="LoaiLinhKien" asp-action="Index"><span class="mm-ico"><i class="bi bi-tags-fill"></i></span><span class="mm-txt"><b>Loại linh kiện</b><small>Phân nhóm</small></span></a>
+                <a class="mm-link" style="--i:4" asp-controller="NhaCungCap" asp-action="Index"><span class="mm-ico"><i class="bi bi-truck"></i></span><span class="mm-txt"><b>Nhà cung cấp</b><small>Đối tác nhập hàng</small></span></a>
+                <a class="mm-link" style="--i:5" asp-controller="ViTriKho" asp-action="Index"><span class="mm-ico"><i class="bi bi-boxes"></i></span><span class="mm-txt"><b>Vị trí lưu kho</b><small>Kệ và ngăn</small></span></a>
+                <a class="mm-link" style="--i:6" asp-controller="PhieuNhap" asp-action="Index"><span class="mm-ico"><i class="bi bi-box-arrow-in-down"></i></span><span class="mm-txt"><b>Phiếu nhập kho</b><small>Lịch sử nhập</small></span></a>
+                <a class="mm-link" style="--i:7" asp-controller="BaoCao" asp-action="TonKho"><span class="mm-ico"><i class="bi bi-file-earmark-bar-graph"></i></span><span class="mm-txt"><b>Báo cáo tồn kho</b><small>Xuất nhập tồn</small></span></a>
+            </div>
+        }
 
-        <form class="side-logout" asp-controller="Account" asp-action="Logout" method="post">
-            <button type="submit" class="side-link logout"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>
-        </form>
-    </aside>
+        <div class="mm-group">Hệ thống</div>
+        <div class="mm-grid">
+            <a class="mm-link" style="--i:8" asp-controller="Home" asp-action="GioiThieu"><span class="mm-ico"><i class="bi bi-info-circle-fill"></i></span><span class="mm-txt"><b>Giới thiệu</b><small>Về L-Inventory</small></span></a>
+            <a class="mm-link" style="--i:9" asp-controller="HoSo" asp-action="Index"><span class="mm-ico"><i class="bi bi-person-gear"></i></span><span class="mm-txt"><b>Tài khoản của tôi</b><small>Ảnh đại diện, mật khẩu</small></span></a>
+        </div>
+
+    </nav>
 
     <div class="content">
         <header class="topbar">
-            <button type="button" class="toggle-btn" id="sidebarToggle" aria-label="Mở menu"><i class="bi bi-list"></i></button>
 
-            <div class="topbar-slogan">
-                <span class="slogan-main">Less searching <em>More fixing</em></span>
-            </div>  
+            <div class="mm" id="mm">
+                <button type="button" class="mm-btn" id="mmBtn" aria-label="Mở menu" aria-expanded="false" aria-controls="mmPanel">
+                    <span class="mm-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+                </button>
+            </div>
+
+            <a class="tb-brand" asp-controller="Home" asp-action="Index" aria-label="L-Inventory">
+                <svg class="logo-mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="lgV" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#5eead4" />
+                            <stop offset="1" stop-color="#0f9b88" />
+                        </linearGradient>
+                    </defs>
+                    <path class="pins" d="M17 4v6M24 4v6M31 4v6M17 38v6M24 38v6M31 38v6M4 17h6M4 24h6M4 31h6M38 17h6M38 24h6M38 31h6"
+                          stroke="url(#lgV)" stroke-width="2.4" stroke-linecap="round" />
+                    <rect x="10" y="10" width="28" height="28" rx="7" fill="#0b1f1c" stroke="url(#lgV)" stroke-width="2.4" />
+                    <path d="M19 17v14h10" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle class="led" cx="30" cy="19" r="2.8" fill="#f43f5e" />
+                </svg>
+                @if (laDashboard)
+                {
+                    <span class="tb-slogan"><em>Đ</em>ủ linh kiện, <em>k</em>ịp tiến độ</span>
+                }
+                else
+                {
+                    <span class="tb-brand-name"><em>L</em>-INVENTORY</span>
+                }
+            </a>
+
+            <form class="topbar-search" asp-controller="LinhKien" asp-action="Index" method="get" role="search">
+                <i class="bi bi-search"></i>
+                <input type="search" id="globalSearch" name="tuKhoa" placeholder="Tìm linh kiện, mã đơn..." autocomplete="off" />
+                <kbd>Ctrl K</kbd>
+            </form>
+
             <div class="topbar-right">
-                <!-- Nút chuyển sáng / tối (nằm ngay cạnh chuông) -->
-                <button type="button" class="notif-btn" id="theme-toggle" aria-label="Chuyển chế độ sáng/tối">
+                <button type="button" class="notif-btn tb-ico" id="theme-toggle" aria-label="Chuyển chế độ sáng/tối" title="Chuyển sáng / tối">
                     <i class="bi bi-moon-stars-fill bell" id="theme-icon"></i>
                 </button>
 
                 <div class="notif" id="notif">
                     <button type="button" class="notif-btn" id="notifBtn" aria-label="Thông báo" aria-expanded="false">
                         <i class="bi bi-bell-fill bell"></i>
-                        <span class="notif-badge" id="notifBadge">4</span>
+                        <span class="notif-badge" id="notifBadge">0</span>
                     </button>
 
                     <div class="notif-panel" id="notifPanel" role="dialog" aria-label="Thông báo">
@@ -101,25 +173,13 @@
                         </div>
 
                         <div class="notif-list">
-                            <a class="notif-item unread red" asp-controller="PhieuNhap" asp-action="Create">
+                            <a class="notif-item" asp-controller="LinhKien" asp-action="Index" asp-route-tinhTrang="saphet">
                                 <span class="notif-ico"><i class="bi bi-exclamation-triangle-fill"></i></span>
-                                <span class="notif-txt"><b>Màn hình iPhone 13 sắp hết</b><small>Còn 2/10 · Kệ A1 - Tầng 2</small></span>
-                                <span class="notif-time">5 phút</span>
+                                <span class="notif-txt"><b>Linh kiện sắp hết</b><small>Xem danh sách cần nhập thêm</small></span>
                             </a>
-                            <a class="notif-item unread red" asp-controller="PhieuNhap" asp-action="Create">
-                                <span class="notif-ico"><i class="bi bi-exclamation-triangle-fill"></i></span>
-                                <span class="notif-txt"><b>Pin Samsung S22 sắp hết</b><small>Còn 1/5 · Kệ B3 - Tầng 1</small></span>
-                                <span class="notif-time">12 phút</span>
-                            </a>
-                            <a class="notif-item unread amber" asp-controller="DonSuaChua" asp-action="Index">
-                                <span class="notif-ico"><i class="bi bi-hourglass-split"></i></span>
-                                <span class="notif-txt"><b>#WO-003 đang chờ linh kiện</b><small>Xiaomi Note 8 · Lê Văn C</small></span>
-                                <span class="notif-time">1 giờ</span>
-                            </a>
-                            <a class="notif-item unread teal" asp-controller="DonSuaChua" asp-action="Index">
-                                <span class="notif-ico"><i class="bi bi-check-circle-fill"></i></span>
-                                <span class="notif-txt"><b>#WO-001 đã hoàn thành</b><small>iPhone 13 · Nguyễn Văn A · 450,000đ</small></span>
-                                <span class="notif-time">2 giờ</span>
+                            <a class="notif-item" asp-controller="DonSuaChua" asp-action="Index">
+                                <span class="notif-ico"><i class="bi bi-wrench-adjustable"></i></span>
+                                <span class="notif-txt"><b>Đơn sửa chữa</b><small>Xem các đơn đang xử lý</small></span>
                             </a>
                         </div>
 
@@ -127,13 +187,79 @@
                     </div>
                 </div>
 
-                <div class="user">
-                    <i class="bi bi-person-circle"></i>
-                    <div class="user-text">
-                        <b>@User.Identity.Name</b>
-                        <small>@vaiTro</small>
+                <div class="gear" id="gear">
+                    <button type="button" class="notif-btn tb-ico" id="gearBtn" aria-label="Cài đặt" aria-expanded="false" title="Cài đặt">
+                        <i class="bi bi-gear-fill"></i>
+                    </button>
+
+                    <div class="gear-panel" id="gearPanel" role="dialog" aria-label="Cài đặt">
+                        <div class="gear-head"><b>Cài đặt</b><small>Lưu trên trình duyệt này</small></div>
+
+                        <div class="gear-row gear-acc">
+                            <span class="av av-lg">@if (avatarUrl != null) { <img src="@avatarUrl" alt="" /> } else { <text>@chuCai</text> }</span>
+                            <div class="gear-txt">
+                                <b>Ảnh đại diện</b>
+                                <small>JPG, PNG, WEBP · tối đa 2 MB</small>
+                                <a class="gear-link" asp-controller="HoSo" asp-action="Index">Chỉnh sửa tài khoản <i class="bi bi-arrow-right"></i></a>
+                                <div class="acc-actions">
+                                    <form asp-controller="HoSo" asp-action="DoiAnhDaiDien" method="post" enctype="multipart/form-data" id="avatarForm">
+                                        <input type="hidden" name="returnUrl" value="@backUrl" />
+                                        <input type="file" name="anh" id="avatarInput" accept="image/png,image/jpeg,image/webp" hidden />
+                                        <label for="avatarInput" class="acc-btn"><i class="bi bi-camera-fill"></i> Đổi ảnh</label>
+                                    </form>
+                                    <a class="acc-btn" asp-controller="HoSo" asp-action="Index"><i class="bi bi-person-gear"></i> Chỉnh sửa</a>
+                                    @if (avatarUrl != null)
+                                    {
+                                        <form asp-controller="HoSo" asp-action="XoaAnhDaiDien" method="post">
+                                            <input type="hidden" name="returnUrl" value="@backUrl" />
+                                            <button type="submit" class="acc-btn danger"><i class="bi bi-trash3"></i> Gỡ</button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="gear-row">
+                            <div class="gear-txt"><b>Giao diện</b><small>Chọn nền tối hoặc sáng</small></div>
+                            <div class="gear-seg" id="themeSeg">
+                                <button type="button" data-theme-set="dark"><i class="bi bi-moon-stars-fill"></i> Tối</button>
+                                <button type="button" data-theme-set="light"><i class="bi bi-sun-fill"></i> Sáng</button>
+                            </div>
+                        </div>
+
+                        <div class="gear-row">
+                            <div class="gear-txt"><b>Hiệu ứng chuyển động</b><small>Tắt nếu máy bị chậm</small></div>
+                            <button type="button" class="gear-switch" id="motionSwitch" role="switch" aria-checked="true" aria-label="Hiệu ứng chuyển động"><span></span></button>
+                        </div>
                     </div>
                 </div>
+
+                <div class="user-menu" id="userMenu">
+    <button type="button" class="user" id="userBtn" aria-haspopup="true" aria-expanded="false">
+        <span class="av">@if (avatarUrl != null) { <img src="@avatarUrl" alt="" /> } else { <text>@chuCai</text> }</span>
+        <div class="user-text">
+            <b>@User.Identity!.Name</b>
+            <small>@vaiTro</small>
+        </div>
+        <i class="bi bi-chevron-down user-caret"></i>
+    </button>
+
+    <div class="user-panel" id="userPanel" role="menu" aria-label="Tài khoản">
+        <div class="up-head">
+            <span class="av av-lg">@if (avatarUrl != null) { <img src="@avatarUrl" alt="" /> } else { <text>@chuCai</text> }</span>
+            <div class="up-info">
+                <b>@User.Identity!.Name</b>
+                <span class="up-role"><i class="bi bi-patch-check-fill"></i> @vaiTro</span>
+            </div>
+        </div>
+        <a class="up-link" asp-controller="HoSo" asp-action="Index" role="menuitem"><i class="bi bi-person-gear"></i> Chỉnh sửa tài khoản</a>
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="up-logout" role="menuitem">
+                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+            </button>
+        </form>
+    </div>
+</div>
             </div>
         </header>
 
@@ -169,37 +295,60 @@ else
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-    <!-- Sidebar, menu active, chuông thông báo -->
     <script>
         (function () {
-            // Nút mở sidebar trên màn hình nhỏ
-            var btn = document.getElementById('sidebarToggle');
-            if (btn) btn.addEventListener('click', function () { document.body.classList.toggle('sidebar-open'); });
-
             var path = location.pathname.toLowerCase().replace(/\/$/, '') || '/';
 
-            document.querySelectorAll('.side-nav .side-link').forEach(function (a) {
-                // Tự sáng mục đang mở
+            document.querySelectorAll('.mm-link').forEach(function (a) {
                 var href = (a.getAttribute('href') || '').toLowerCase().replace(/\/$/, '');
                 if (href === '') href = '/';
                 var match = (href === '/' && (path === '/' || path === '/home' || path === '/home/index'))
-                         || (href !== '/' && href !== '#' && (path === href || path.indexOf(href + '/') === 0));
+                        || (href !== '/' && href !== '#' && (path === href || path.indexOf(href + '/') === 0));
                 if (match) a.classList.add('active');
-
-                // Hiệu ứng gợn sóng khi nhấp
-                a.addEventListener('mousedown', function (e) {
-                    if (a.classList.contains('disabled')) return;
-                    var r = a.getBoundingClientRect();
-                    var s = document.createElement('span');
-                    s.className = 'ripple';
-                    s.style.left = (e.clientX - r.left) + 'px';
-                    s.style.top = (e.clientY - r.top) + 'px';
-                    a.appendChild(s);
-                    setTimeout(function () { s.remove(); }, 600);
-                });
             });
 
-            // Chuông thông báo
+            // ----- Menu trượt: mở thì đẩy nội dung trang sang bên -----
+            var mm = document.getElementById('mm'), mmBtn = document.getElementById('mmBtn'), mmPanel = document.getElementById('mmPanel');
+            if (mm && mmBtn && mmPanel) {
+                var de = document.documentElement;
+                var isMobile = function () { return window.innerWidth <= 767; };
+                var mmSet = function (open, save) {
+                    mm.classList.toggle('open', open);
+                    de.classList.toggle('mm-open', open);
+                    mmBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    mmBtn.setAttribute('aria-label', open ? 'Đóng menu' : 'Mở menu');
+                    if (save && !isMobile()) { try { localStorage.setItem('menu', open ? 'open' : 'closed'); } catch (e) { } }
+                };
+
+                // Đồng bộ trạng thái ban đầu rồi bật lại hiệu ứng (để trang không bị "thụt" khi vừa tải)
+                mmSet(de.classList.contains('mm-open'), false);
+                requestAnimationFrame(function () { requestAnimationFrame(function () { de.classList.remove('mm-init'); }); });
+
+                // Chỉ nút ☰ mới đóng/mở menu; bấm vào mục thì menu giữ nguyên
+                mmBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    mmSet(!de.classList.contains('mm-open'), true);
+                });
+                mmPanel.addEventListener('click', function (e) { e.stopPropagation(); });
+
+                // Chỉ trên điện thoại (menu che cả trang) mới tự đóng khi bấm ra ngoài / Esc
+                document.addEventListener('click', function () { if (isMobile()) mmSet(false, false); });
+                document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isMobile()) mmSet(false, false); });
+            }
+
+            // ----- Menu tài khoản (góc phải) -----
+            var uBtn = document.getElementById('userBtn'), uPanel = document.getElementById('userPanel'), uWrap = document.getElementById('userMenu');
+            if (uBtn && uPanel) {
+                var uClose = function () { uPanel.classList.remove('open'); uBtn.setAttribute('aria-expanded', 'false'); };
+                uBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var open = uPanel.classList.toggle('open');
+                    uBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                });
+                document.addEventListener('click', function (e) { if (!uWrap.contains(e.target)) uClose(); });
+                document.addEventListener('keydown', function (e) { if (e.key === 'Escape') uClose(); });
+            }
+
             var nBtn = document.getElementById('notifBtn'),
                 nPanel = document.getElementById('notifPanel'),
                 nBadge = document.getElementById('notifBadge'),
@@ -235,22 +384,30 @@ else
         })();
     </script>
 
-    <!-- Chuyển sáng / tối: nhún một nhịp rồi tỏa ra hết trang -->
     <script>
         (function () {
-            // ===== Chọn hình: 'heart' | 'star' | 'diamond' | 'square' | 'hexagon' | 'circle' =====
             var SHAPE = 'circle';
+            var root = document.documentElement;
+            function set(k, v) { try { localStorage.setItem(k, v); } catch (e) { } }
+
+            var segBtns = document.querySelectorAll('#themeSeg [data-theme-set]');
+            var motionSw = document.getElementById('motionSwitch');
 
             function applyTheme(t) {
-                var root = document.documentElement;
                 root.setAttribute('data-theme', t);
                 root.setAttribute('data-bs-theme', t);
                 var icon = document.getElementById('theme-icon');
                 if (icon) icon.className = 'bi ' + (t === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill') + ' bell';
-                try { localStorage.setItem('theme', t); } catch (e) { }
+                segBtns.forEach(function (b) { b.classList.toggle('on', b.dataset.themeSet === t); });
+                set('theme', t);
             }
 
-            // Luôn trả về đúng 72 điểm để các khung hình nội suy mượt
+            function applyMotion(on) {
+                root.classList.toggle('no-motion', !on);
+                set('motion', on ? 'on' : 'off');
+                if (motionSw) { motionSw.setAttribute('aria-checked', on ? 'true' : 'false'); motionSw.classList.toggle('on', on); }
+            }
+
             function poly(name, cx, cy, s) {
                 var N = 72, pts = [];
                 for (var i = 0; i < N; i++) {
@@ -277,31 +434,18 @@ else
                 return 'polygon(' + pts.join(',') + ')';
             }
 
-            // Đồng bộ icon theo theme hiện tại khi tải trang
-            applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+            function switchTheme(next, origin) {
+                var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches || root.classList.contains('no-motion');
+                if (!document.startViewTransition || reduce || !origin) { applyTheme(next); return; }
 
-            // Bắt ở pha capture: chạy trước mọi listener cũ (kể cả trong site.js), rồi chặn chúng lại
-            document.addEventListener('click', function (e) {
-                var btn = e.target.closest('#theme-toggle');
-                if (!btn) return;
-                e.stopImmediatePropagation();
-                e.preventDefault();
-
-                var cur = document.documentElement.getAttribute('data-theme');
-                var next = cur === 'dark' ? 'light' : 'dark';
-
-                var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                if (!document.startViewTransition || reduce) { applyTheme(next); return; }
-
-                var r = btn.getBoundingClientRect();
+                var r = origin.getBoundingClientRect();
                 var x = r.left + r.width / 2, y = r.top + r.height / 2;
                 var radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
 
                 var t = document.startViewTransition(function () { applyTheme(next); });
-
                 t.ready.then(function () {
                     var big = radius * ((SHAPE === 'star' || SHAPE === 'heart') ? 2.4 : 1.5);
-                    document.documentElement.animate(
+                    root.animate(
                         [
                             { clipPath: poly(SHAPE, x, y, 0),   offset: 0,   easing: 'cubic-bezier(.3, 1.5, .5, 1)' },
                             { clipPath: poly(SHAPE, x, y, 70),  offset: .22, easing: 'ease-in-out' },
@@ -310,9 +454,53 @@ else
                         ],
                         { duration: 1300, pseudoElement: '::view-transition-new(root)' }
                     );
-                }).catch(function (err) { console.log('[theme] loi:', err); });
+                }).catch(function () { });
+            }
 
+            applyTheme(root.getAttribute('data-theme') || 'dark');
+            applyMotion(!root.classList.contains('no-motion'));
+
+            document.addEventListener('click', function (e) {
+                var btn = e.target.closest('#theme-toggle');
+                if (!btn) return;
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                switchTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark', btn);
             }, true);
+
+            segBtns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    if (root.getAttribute('data-theme') !== b.dataset.themeSet) switchTheme(b.dataset.themeSet, b);
+                });
+            });
+            if (motionSw) motionSw.addEventListener('click', function () { applyMotion(root.classList.contains('no-motion')); });
+
+            var gBtn = document.getElementById('gearBtn'), gPanel = document.getElementById('gearPanel'), gWrap = document.getElementById('gear');
+            if (gBtn && gPanel) {
+                var gClose = function () { gPanel.classList.remove('open'); gBtn.setAttribute('aria-expanded', 'false'); };
+                gBtn.addEventListener('click', function () {
+                    var open = gPanel.classList.toggle('open');
+                    gBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                });
+                document.addEventListener('click', function (e) { if (!gWrap.contains(e.target)) gClose(); });
+                document.addEventListener('keydown', function (e) { if (e.key === 'Escape') gClose(); });
+            }
+
+            var avIn = document.getElementById('avatarInput');
+            if (avIn) avIn.addEventListener('change', function () {
+                var f = avIn.files[0];
+                if (!f) return;
+                if (f.size > 2 * 1024 * 1024) { alert('Ảnh tối đa 2 MB.'); avIn.value = ''; return; }
+                document.getElementById('avatarForm').submit();
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    var s = document.getElementById('globalSearch');
+                    if (s) s.focus();
+                }
+            });
         })();
     </script>
 

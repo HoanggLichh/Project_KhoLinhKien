@@ -1,0 +1,142 @@
+@model KhoLinhKien.Controllers.HoSoVM
+@{
+    ViewData["Title"] = "Tài khoản của tôi";
+    var chuCai = string.IsNullOrEmpty(Model.Ten) ? "?" : Model.Ten.Substring(0, 1).ToUpper();
+}
+
+<div class="page-head">
+    <div>
+        <h1>Tài khoản của tôi</h1>
+        <p>Đổi ảnh đại diện và mật khẩu đăng nhập.</p>
+    </div>
+</div>
+
+<div class="acc-grid">
+
+    @* ---------- Ảnh đại diện ---------- *@
+    <section class="acc-card">
+        <h2><i class="bi bi-person-bounding-box"></i> Ảnh đại diện</h2>
+
+        <form asp-controller="HoSo" asp-action="DoiAnhDaiDien" method="post" enctype="multipart/form-data" id="avForm">
+            <input type="hidden" name="returnUrl" value="/HoSo" />
+            <input type="file" name="anh" id="avFile" accept="image/png,image/jpeg,image/webp" hidden />
+
+            <label for="avFile" class="acc-drop" id="avDrop">
+                <span class="acc-av" id="avPreview">
+                    @if (Model.AvatarUrl != null) { <img src="@Model.AvatarUrl" alt="Ảnh đại diện" /> } else { <text>@chuCai</text> }
+                </span>
+                <span class="acc-drop-txt">
+                    <b>Chọn ảnh hoặc kéo thả vào đây</b>
+                    <small>JPG, PNG, WEBP · tối đa 2 MB · nên dùng ảnh vuông</small>
+                </span>
+            </label>
+
+            <p class="acc-note" id="avNote" hidden></p>
+
+            <div class="acc-actions">
+                <button type="submit" class="btn-add" id="avSave" disabled><i class="bi bi-check2"></i> Lưu ảnh</button>
+                <button type="button" class="btn-soft" id="avReset" hidden>Hủy chọn</button>
+            </div>
+        </form>
+
+        @if (Model.AvatarUrl != null)
+        {
+            <form asp-controller="HoSo" asp-action="XoaAnhDaiDien" method="post" class="acc-remove">
+                <input type="hidden" name="returnUrl" value="/HoSo" />
+                <button type="submit" class="btn-soft acc-danger"><i class="bi bi-trash3"></i> Gỡ ảnh hiện tại</button>
+            </form>
+        }
+    </section>
+
+    @* ---------- Thông tin ---------- *@
+    <section class="acc-card">
+        <h2><i class="bi bi-person-vcard"></i> Thông tin</h2>
+        <dl class="acc-info">
+            <div><dt>Tên đăng nhập</dt><dd>@Model.Ten</dd></div>
+            <div><dt>Email</dt><dd>@Model.Email</dd></div>
+            <div><dt>Chức vụ</dt><dd><span class="up-role"><i class="bi bi-patch-check-fill"></i> @Model.VaiTro</span></dd></div>
+            <div><dt>Đăng nhập bằng</dt><dd>@(Model.CoMatKhau ? "Mật khẩu" : "Tài khoản Google")</dd></div>
+        </dl>
+        <p class="acc-note">Chức vụ do Quản lý phân quyền, bạn không tự đổi được.</p>
+    </section>
+
+    @* ---------- Đổi mật khẩu ---------- *@
+    <section class="acc-card acc-wide">
+        <h2><i class="bi bi-shield-lock"></i> Đổi mật khẩu</h2>
+
+        @if (!Model.CoMatKhau)
+        {
+            <p class="acc-note">Tài khoản này đăng nhập bằng Google nên không có mật khẩu để đổi.</p>
+        }
+        else
+        {
+            <form asp-controller="HoSo" asp-action="DoiMatKhau" method="post" class="acc-form">
+                <div asp-validation-summary="ModelOnly" class="acc-error"></div>
+
+                <label>Mật khẩu hiện tại
+                    <input asp-for="DoiMatKhau.MatKhauCu" class="form-ctl" autocomplete="current-password" />
+                    <span asp-validation-for="DoiMatKhau.MatKhauCu" class="acc-error"></span>
+                </label>
+                <label>Mật khẩu mới
+                    <input asp-for="DoiMatKhau.MatKhauMoi" class="form-ctl" autocomplete="new-password" />
+                    <span asp-validation-for="DoiMatKhau.MatKhauMoi" class="acc-error"></span>
+                </label>
+                <label>Nhập lại mật khẩu mới
+                    <input asp-for="DoiMatKhau.XacNhan" class="form-ctl" autocomplete="new-password" />
+                    <span asp-validation-for="DoiMatKhau.XacNhan" class="acc-error"></span>
+                </label>
+
+                <div class="acc-actions">
+                    <button type="submit" class="btn-add"><i class="bi bi-key"></i> Đổi mật khẩu</button>
+                </div>
+            </form>
+        }
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var file = document.getElementById('avFile'), drop = document.getElementById('avDrop'),
+                prev = document.getElementById('avPreview'), save = document.getElementById('avSave'),
+                reset = document.getElementById('avReset'), note = document.getElementById('avNote');
+            if (!file) return;
+
+            var original = prev.innerHTML;
+            var okTypes = ['image/png', 'image/jpeg', 'image/webp'];
+
+            function clear() {
+                file.value = ''; prev.innerHTML = original;
+                save.disabled = true; reset.hidden = true; note.hidden = true;
+            }
+            function pick(f) {
+                if (!f) return;
+                if (okTypes.indexOf(f.type) < 0) { note.textContent = 'Chỉ nhận ảnh JPG, PNG hoặc WEBP.'; note.hidden = false; file.value = ''; return; }
+                if (f.size > 2 * 1024 * 1024) { note.textContent = 'Ảnh tối đa 2 MB.'; note.hidden = false; file.value = ''; return; }
+                var r = new FileReader();
+                r.onload = function (e) {
+                    prev.innerHTML = '<img alt="Xem trước" src="' + e.target.result + '" />';
+                    note.textContent = 'Xem trước: ' + f.name + '. Bấm "Lưu ảnh" để áp dụng.'; note.hidden = false;
+                    save.disabled = false; reset.hidden = false;
+                };
+                r.readAsDataURL(f);
+            }
+
+            file.addEventListener('change', function () { pick(file.files[0]); });
+            reset.addEventListener('click', clear);
+
+            ['dragenter', 'dragover'].forEach(function (ev) {
+                drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); });
+            });
+            ['dragleave', 'drop'].forEach(function (ev) {
+                drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over'); });
+            });
+            drop.addEventListener('drop', function (e) {
+                var f = e.dataTransfer.files[0];
+                if (!f) return;
+                var dt = new DataTransfer(); dt.items.add(f); file.files = dt.files;
+                pick(f);
+            });
+        })();
+    </script>
+}

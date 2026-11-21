@@ -1,0 +1,74 @@
+@model List<KhoLinhKien.Models.LichSuDong>
+@{
+    var lk = (KhoLinhKien.Models.LinhKien)ViewBag.LinhKien;
+    ViewData["Title"] = "Lịch sử " + lk.MaLinhKien;
+
+    var tongNhap = Model.Where(x => x.Loai == "Nhập").Sum(x => x.SoLuong);
+    var tongXuat = Model.Where(x => x.Loai == "Xuất").Sum(x => x.SoLuong);
+    var khop = tongNhap - tongXuat == lk.SoLuongTon;
+    var cls = lk.SoLuongTon <= 0 ? "wait" : lk.SoLuongTon <= lk.TonToiThieu ? "doing" : "done";
+    var nhan = lk.SoLuongTon <= 0 ? "Hết hàng" : lk.SoLuongTon <= lk.TonToiThieu ? "Sắp hết" : "Đủ hàng";
+}
+
+<a class="back-link" asp-action="Index"><i class="bi bi-arrow-left"></i> Quay lại danh sách linh kiện</a>
+
+<div class="page-head">
+    <div>
+        <h1>Lịch sử nhập/xuất</h1>
+        <p><span class="code-chip">@lk.MaLinhKien</span> &nbsp;@lk.TenLinhKien</p>
+    </div>
+    <span class="pill @cls"><i></i>@nhan</span>
+</div>
+
+<div class="detail-grid" style="margin-bottom:1rem">
+    <div class="detail-item"><small>Tồn hiện tại</small><b>@lk.SoLuongTon</b></div>
+    <div class="detail-item"><small>Tổng nhập</small><b style="color:var(--r-ok,#16a34a)">+@tongNhap</b></div>
+    <div class="detail-item"><small>Tổng xuất</small><b style="color:var(--r-bad,#dc2626)">-@tongXuat</b></div>
+    <div class="detail-item">
+        <small>Đối chiếu</small>
+        @if (khop)
+        {
+            <b style="color:var(--r-ok,#16a34a)"><i class="bi bi-check-circle-fill"></i> Khớp với tồn kho</b>
+        }
+        else
+        {
+            <b style="color:var(--r-warn,#d97706)"><i class="bi bi-exclamation-triangle-fill"></i> Chưa khớp</b>
+        }
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <i class="bi bi-clock-history"></i>
+        <b>Chưa có giao dịch nào</b>
+        <span>Linh kiện này chưa được nhập hoặc xuất.</span>
+    </div>
+}
+else
+{
+    <div class="result-count"><b>@Model.Count</b> giao dịch</div>
+    <div class="tbl-wrap">
+        <table class="tbl">
+            <thead>
+                <tr><th>Ngày</th><th>Loại</th><th>Chứng từ</th><th>Số lượng</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var x in Model)
+                {
+                    var nhap = x.Loai == "Nhập";
+                    <tr>
+                        <td>@x.Ngay.ToString("dd/MM/yyyy")</td>
+                        <td><span class="pill @(nhap ? "done" : "wait")"><i></i>@x.Loai</span></td>
+                        <td><span class="code-chip">@x.ChungTu</span></td>
+                        <td class="num" style="color:@(nhap ? "var(--r-ok,#16a34a)" : "var(--r-bad,#dc2626)")">@(nhap ? "+" : "-")@x.SoLuong</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div style="margin-top:1rem">
+    <a class="btn-soft" asp-action="Index"><i class="bi bi-arrow-left"></i> Quay lại</a>
+</div>

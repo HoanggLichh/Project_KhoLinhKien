@@ -24,8 +24,8 @@ public class LinhKienController : Controller
         ViewData["ViTriKhoId"] = new SelectList(_context.ViTriKho.OrderBy(x => x.TenViTri), "Id", "TenViTri", viTriId);
     }
 
-    // Danh sách + tìm theo mã/tên + lọc theo loại, vị trí
-    public async Task<IActionResult> Index(string? tuKhoa, int? loaiId, int? viTriId)
+        // Danh sách + tìm theo mã/tên + lọc theo loại, vị trí, tình trạng tồn + sắp xếp
+    public async Task<IActionResult> Index(string? tuKhoa, int? loaiId, int? viTriId, string? tinhTrang, string? sapXep)
     {
         var query = _context.LinhKien
             .Include(x => x.LoaiLinhKien)
@@ -40,11 +40,30 @@ public class LinhKienController : Controller
         if (loaiId != null) query = query.Where(x => x.LoaiLinhKienId == loaiId);
         if (viTriId != null) query = query.Where(x => x.ViTriKhoId == viTriId);
 
+        if (tinhTrang == "saphet")
+            query = query.Where(x => x.SoLuongTon > 0 && x.SoLuongTon <= x.TonToiThieu);
+        else if (tinhTrang == "hethang")
+            query = query.Where(x => x.SoLuongTon <= 0);
+        else if (tinhTrang == "duhang")
+            query = query.Where(x => x.SoLuongTon > x.TonToiThieu);
+
+        query = sapXep switch
+        {
+            "ton_tang" => query.OrderBy(x => x.SoLuongTon),
+            "ton_giam" => query.OrderByDescending(x => x.SoLuongTon),
+            "gia_tang" => query.OrderBy(x => x.DonGia),
+            "gia_giam" => query.OrderByDescending(x => x.DonGia),
+            "ten"      => query.OrderBy(x => x.TenLinhKien),
+            _          => query.OrderBy(x => x.MaLinhKien)
+        };
+
         ViewData["TuKhoa"] = tuKhoa;
+        ViewData["TinhTrang"] = tinhTrang;
+        ViewData["SapXep"] = sapXep;
         ViewData["LoaiId"] = new SelectList(_context.LoaiLinhKien.OrderBy(x => x.TenLoai), "Id", "TenLoai", loaiId);
         ViewData["ViTriId"] = new SelectList(_context.ViTriKho.OrderBy(x => x.TenViTri), "Id", "TenViTri", viTriId);
 
-        return View(await query.OrderBy(x => x.MaLinhKien).ToListAsync());
+        return View(await query.ToListAsync());
     }
 
     public async Task<IActionResult> Details(int? id)
@@ -165,5 +184,31 @@ public class LinhKienController : Controller
         await _context.SaveChangesAsync();
         TempData["ThongBao"] = "Đã xóa linh kiện.";
         return RedirectToAction(nameof(Index));
+    }
+
+        public async Task<IActionResult> LichSu(int id)
+    {
+        var lk = await _context.LinhKien.FindAsync(id);
+        if (lk == null) return NotFound();
+
+        var nhap = await _context.ChiTietPhieuNhap
+            .Where(x => x.LinhKienId == id)
+            .Select(x => new { Ngay = x.PhieuNhap!.NgayNhap, x.PhieuNhapId, x.SoLuong })
+            .ToListAsync();
+
+        var xuat = await _context.ChiTietDonSuaChua
+            .Where(x => x.LinhKienId == id)
+            .Select(x => new { Ngay = x.DonSuaChua!.NgayNhan, x.DonSuaChuaId, x.SoLuong })
+            .ToListAsync();
+
+        var ds = nhap.Select(x => new LichSuDong
+                { Ngay = x.Ngay, Loai = "Nhập", ChungTu = $"PN-{x.PhieuNhapId:D4}", SoLuong = x.SoLuong })
+            .Concat(xuat.Select(x => new LichSuDong
+                { Ngay = x.Ngay, Loai = "Xuất", ChungTu = $"DSC-{x.DonSuaChuaId:D4}", SoLuong = x.SoLuong }))
+            .OrderByDescending(x => x.Ngay)
+            .ToList();
+
+        ViewBag.LinhKien = lk;
+        return View(ds);
     }
 }
